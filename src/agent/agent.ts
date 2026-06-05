@@ -359,15 +359,31 @@ export class NarrativeDirector {
     const memory = await this.store.load(sessionId);
     const userPrompt = buildUserPrompt(event, signature, memory);
 
+    const model = getModel("anthropic", "claude-sonnet-4-6");
     const agent = new Agent({
       initialState: {
         systemPrompt: buildSystemPrompt(this.prompt),
-        model: getModel("anthropic", "claude-sonnet-4-20250514"),
+        model: process.env.ANTHROPIC_BASE_URL
+          ? { ...model, baseUrl: process.env.ANTHROPIC_BASE_URL }
+          : model,
         tools: [narrativeDecisionTool],
       },
     });
 
     await agent.prompt(userPrompt);
+
+    // Debug: print raw LLM response
+    console.error("[debug] messages count:", agent.state.messages.length);
+    console.error("[debug] errorMessage:", agent.state.errorMessage);
+    const lastMsg = agent.state.messages[agent.state.messages.length - 1];
+    console.error("[debug] last message role:", lastMsg?.role);
+    if (lastMsg?.role === "assistant") {
+      const assistant = lastMsg as AssistantMessage;
+      console.error("[debug] content blocks:", JSON.stringify(assistant.content, null, 2));
+      console.error("[debug] stopReason:", assistant.stopReason);
+      console.error("[debug] errorMessage:", assistant.errorMessage);
+    }
+
     const decision = extractDecisionFromToolCalls(agent);
     const clamped = clampMessageText(decision);
 
