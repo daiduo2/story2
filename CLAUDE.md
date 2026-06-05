@@ -153,11 +153,11 @@ Phase transitions are driven by rule violations, hidden searches, anomaly trigge
 
 - Vitest runs in `jsdom` with globals enabled.
 - Coverage thresholds are set at 80% for statements, branches, functions, and lines.
-- Agent tests need `ANTHROPIC_API_KEY` (or `ANTHROPIC_BASE_URL`) in `.env`. The `run.ts` script uses `dotenv`.
+- Agent tests need `Anthropic API key` (or `Anthropic base URL`) in `.env`. The `run.ts` script uses `dotenv`.
 
 ## Environment Variables
 
 ```bash
-ANTHROPIC_API_KEY=      # Required for agent LLM calls
-ANTHROPIC_BASE_URL=     # Optional proxy/base URL
+# Anthropic API key     # Required for agent LLM calls
+# Anthropic base URL    # Optional proxy/base URL
 ```
