@@ -33,12 +33,11 @@ async function main() {
     totalScrollDepth: 4.2,
   };
 
+  console.log("[run] Ensuring session...");
+  await director.ensureSession(sessionId);
+
   console.log("[run] Calling evaluate...");
-  const decision = await director.evaluateWithFallback(
-    sessionId,
-    event,
-    signature
-  );
+  const decision = await director.evaluate(sessionId, event, signature);
 
   console.log("\n=== NarrativeDecision ===");
   console.log(JSON.stringify(decision, null, 2));

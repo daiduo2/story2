@@ -1,6 +1,6 @@
 import type { GameEvent, NarrativeDecision, PlayerSignature } from './types'
 
-const API_URL = 'http://localhost:3456/api/narrative'
+const API_URL = 'http://localhost:3724/api/narrative'
 
 export interface BaiLuLLMAPI {
   evaluate: (event: GameEvent) => Promise<NarrativeDecision | null>
@@ -10,9 +10,6 @@ export interface BaiLuLLMAPI {
 declare global {
   interface Window {
     BaiLuLLM?: BaiLuLLMAPI
-    BaiLuBehavior?: {
-      getSignature: () => PlayerSignature
-    }
     __bailu_prefetch_state?: NarrativeDecision
   }
 }

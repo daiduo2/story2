@@ -6,7 +6,10 @@ describe('behavior', () => {
   beforeEach(() => {
     // Clean module state between tests by re-importing
     localStorage.clear()
+    sessionStorage.clear()
     vi.useFakeTimers()
+    // Reset URL
+    window.history.replaceState(null, '', '/')
     // Clear any existing global
     // @ts-expect-error
     delete window.BaiLuBehavior
@@ -54,7 +57,8 @@ describe('behavior', () => {
         returnVisit: true,
         version: 1,
       }
-      localStorage.setItem('bailu_behavior_signature', JSON.stringify(existing))
+      localStorage.setItem('bailu_sig_sess-123', JSON.stringify(existing))
+      window.history.replaceState(null, '', '/?sid=sess-123')
 
       const { initBehavior } = await loadBehavior()
       initBehavior()
@@ -117,7 +121,8 @@ describe('behavior', () => {
       initBehavior()
       window.BaiLuBehavior!.recordPageVisit('/pages/volume-01', '卷一')
 
-      const stored = localStorage.getItem('bailu_behavior_signature')
+      const sid = window.BaiLuBehavior!.getSignature().sessionId
+      const stored = localStorage.getItem(`bailu_sig_${sid}`)
       expect(stored).toBeTruthy()
       const parsed = JSON.parse(stored!)
       expect(parsed.pagesVisited[0].url).toBe('/pages/volume-01')
@@ -251,12 +256,13 @@ describe('behavior', () => {
       window.BaiLuBehavior!.recordSearch('内科')
       window.BaiLuBehavior!.recordCopy()
 
+      const sid = window.BaiLuBehavior!.getSignature().sessionId
       window.BaiLuBehavior!.reset()
       const sig = window.BaiLuBehavior!.getSignature()
       expect(sig.pagesVisited).toEqual([])
       expect(sig.searches).toEqual([])
       expect(sig.copies).toBe(0)
-      expect(localStorage.getItem('bailu_behavior_signature')).toBeNull()
+      expect(localStorage.getItem(`bailu_sig_${sid}`)).toBeNull()
     })
   })
 

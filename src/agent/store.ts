@@ -82,15 +82,30 @@ export class MemoryStore {
 
   async load(sessionId: string): Promise<Memory> {
     const filePath = path.join(this.dataDir, `${sessionId}.json`);
+    const raw = await fs.readFile(filePath, "utf-8");
+    const memory = JSON.parse(raw) as Memory;
+    this.logger.info("memory.loaded", { sessionId, stage: memory.relationshipStage });
+    return memory;
+  }
+
+  async exists(sessionId: string): Promise<boolean> {
+    const filePath = path.join(this.dataDir, `${sessionId}.json`);
     try {
-      const raw = await fs.readFile(filePath, "utf-8");
-      const memory = JSON.parse(raw) as Memory;
-      this.logger.info("memory.loaded", { sessionId, stage: memory.relationshipStage });
-      return memory;
-    } catch (err) {
-      this.logger.info("memory.created", { sessionId, reason: "file_not_found" });
-      return this.createDefaultMemory();
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
     }
+  }
+
+  async create(sessionId: string): Promise<void> {
+    const memory = this.createDefaultMemory();
+    await fs.mkdir(this.dataDir, { recursive: true });
+    await fs.writeFile(
+      path.join(this.dataDir, `${sessionId}.json`),
+      JSON.stringify(memory, null, 2)
+    );
+    this.logger.info("memory.created", { sessionId });
   }
 
   async save(sessionId: string, memory: Memory, decision: NarrativeDecision): Promise<void> {
@@ -127,7 +142,7 @@ export class MemoryStore {
     });
   }
 
-  private createDefaultMemory(): Memory {
+  createDefaultMemory(): Memory {
     return {
       relationshipStage: "unknown",
       understandingDepth: 0,

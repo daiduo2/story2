@@ -1,11 +1,12 @@
 import type { NarrativeDecision, SystemMessage, ContentModuleRef } from './types'
+import { appendSidToUrl } from './behavior.js'
 
 export function executeDecision(decision: NarrativeDecision) {
   const { routeDecision, systemMessage, contentModules } = decision
 
   if (routeDecision.action === 'redirect' && routeDecision.targetPage) {
     const prefix = location.pathname.includes('/pages/') ? '' : 'pages/'
-    location.assign(prefix + routeDecision.targetPage + '.html')
+    location.assign(appendSidToUrl(prefix + routeDecision.targetPage + '.html'))
     return
   }
 

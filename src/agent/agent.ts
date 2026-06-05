@@ -279,31 +279,6 @@ function clampStage(
   return STAGE_ORDER[proposedIdx];
 }
 
-// ─── Fallback Decision ────────────────────────────────────────────────────────
-
-function getFallbackDecision(
-  signature: PlayerSignature
-): NarrativeDecision {
-  const violations = signature.ruleViolations.length;
-  const searches = signature.searches.length;
-
-  return {
-    version: "narrative-v2",
-    routeDecision: { action: "stay" },
-    systemMessage:
-      violations > 0
-        ? { text: "系统记录了。", style: "observational" }
-        : undefined,
-    contentModules: [],
-    memoryUpdate: {
-      relationshipStage: violations > 2 ? "noticed" : "unknown",
-      understandingDepth: Math.min(violations * 10 + searches * 5, 100),
-      observedPatterns: [],
-      notes: "降级模式：无 Agent 响应。",
-    },
-  };
-}
-
 // ─── Extract Decision from Tool Call ──────────────────────────────────────────
 
 function extractDecisionFromToolCalls(
@@ -502,19 +477,10 @@ export class NarrativeDirector {
     return safeDecision;
   }
 
-  async evaluateWithFallback(
-    sessionId: string,
-    event: GameEvent,
-    signature: PlayerSignature
-  ): Promise<NarrativeDecision> {
-    try {
-      return await this.evaluate(sessionId, event, signature);
-    } catch (error) {
-      this.logger.error("evaluate.failed", {
-        sessionId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-      return getFallbackDecision(signature);
+  async ensureSession(sessionId: string): Promise<void> {
+    const exists = await this.store.exists(sessionId);
+    if (!exists) {
+      await this.store.create(sessionId);
     }
   }
 }
