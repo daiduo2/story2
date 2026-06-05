@@ -13,17 +13,20 @@ if [ -z "$ADDED" ]; then
   exit 0
 fi
 
+# Exclude lines with explicit error handling or "not found" semantics
+FILTERED=$(echo "$ADDED" | grep -vE '(console\.(error|warn|log)|res\.writeHead|throw\s+new|Content not found|Page not found|档案未找到|catch\s*\(\s*error\s*\)\s*\{\s*$)')
+
 PATTERNS=(
   'catch\s*\(\s*[_a-zA-Z0-9]*\s*\)\s*\{\s*$'
   'catch\s*\{[^}]*return\s+(null|undefined|false|0|\{\}|\[\])'
   '\|\|\s*[0-9]+'
-  '\?\?\s*(noop|null|undefined|\{\}|0|""|'\''\'\''|\[\])'
+  '\?\?\s*(noop|null|undefined|\{\}|0|""|'\''\'''\''|\[\])'
   'return\s+(null|undefined)\s*;?\s*$'
 )
 
 FOUND=0
 for pattern in "${PATTERNS[@]}"; do
-  MATCHES=$(echo "$ADDED" | grep -E "$pattern" | head -5 || true)
+  MATCHES=$(echo "$FILTERED" | grep -E "$pattern" | head -5 || true)
   if [ -n "$MATCHES" ]; then
     if [ "$FOUND" -eq 0 ]; then
       echo "[detect-fallback] Potential fallback patterns detected in staged changes:"

@@ -1,5 +1,7 @@
-import { getModel, Type, completeSimple } from "@earendil-works/pi-ai";
-import type { AssistantMessage, Static, Tool } from "@earendil-works/pi-ai";
+import { Agent } from "@earendil-works/pi-agent-core";
+import type { AgentTool } from "@earendil-works/pi-agent-core";
+import { getModel, Type } from "@earendil-works/pi-ai";
+import type { AssistantMessage, Static } from "@earendil-works/pi-ai";
 import { Check, Errors } from "typebox/value";
 import yaml from "js-yaml";
 import fs from "fs/promises";
@@ -69,10 +71,15 @@ type NarrativeDecisionPayload = Static<typeof NarrativeDecisionSchema>;
 
 // ─── Tool Definition ──────────────────────────────────────────────────────────
 
-const narrativeDecisionTool: Tool<typeof NarrativeDecisionSchema> = {
+const narrativeDecisionTool: AgentTool<typeof NarrativeDecisionSchema> = {
   name: "narrative_decision",
   description: "根据玩家行为和当前情境，输出本轮叙事决策",
+  label: "叙事决策",
   parameters: NarrativeDecisionSchema,
+  execute: async (_toolCallId, params) => ({
+    content: [{ type: "text" as const, text: "" }],
+    details: params,
+  }),
 };
 
 // ─── Prompt Config Types ──────────────────────────────────────────────────────
@@ -282,33 +289,42 @@ function clampStage(
 // ─── Extract Decision from Tool Call ──────────────────────────────────────────
 
 function extractDecisionFromToolCalls(
-  response: AssistantMessage,
+  agent: Agent,
   logger: Logger
 ): NarrativeDecision {
-  if (response.stopReason === "error" || response.errorMessage) {
+  const messages = agent.state.messages;
+  const lastMessage = messages[messages.length - 1];
+
+  if (lastMessage?.role !== "assistant") {
+    throw new Error("Expected assistant message in agent state");
+  }
+
+  const assistant = lastMessage as AssistantMessage;
+
+  if (assistant.stopReason === "error" || assistant.errorMessage) {
     logger.error("llm.error_response", {
-      stopReason: response.stopReason,
-      errorMessage: response.errorMessage,
-      usage: response.usage,
+      stopReason: assistant.stopReason,
+      errorMessage: assistant.errorMessage,
+      usage: assistant.usage,
     });
     throw new Error(
-      `LLM returned error: ${response.errorMessage || response.stopReason}`
+      `LLM returned error: ${assistant.errorMessage || assistant.stopReason}`
     );
   }
 
-  const toolCalls = response.content.filter(
+  const toolCalls = assistant.content.filter(
     (c): c is Extract<typeof c, { type: "toolCall" }> =>
       c.type === "toolCall"
   );
 
   if (toolCalls.length === 0) {
-    const textParts = response.content
+    const textParts = assistant.content
       .filter((c) => c.type === "text")
       .map((c) => (c as { text: string }).text)
       .join("");
     logger.warn("llm.no_tool_call", {
       textPreview: textPreview(textParts, 200),
-      stopReason: response.stopReason,
+      stopReason: assistant.stopReason,
     });
     throw new Error("No tool call found in assistant response");
   }
@@ -324,7 +340,7 @@ function extractDecisionFromToolCalls(
 
   logger.info("llm.tool_call", {
     toolName: toolCalls[0].name,
-    usage: response.usage,
+    usage: assistant.usage,
   });
 
   return raw;
@@ -392,6 +408,69 @@ function textPreview(text: string, maxLen: number): string {
   return text.slice(0, maxLen) + "...";
 }
 
+// ─── Agent Prompt with Timeout ────────────────────────────────────────────────
+
+async function promptWithTimeout(
+  agent: Agent,
+  message: string,
+  timeoutMs: number
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      agent.abort();
+      reject(new Error(`Agent timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    agent
+      .prompt(message)
+      .then(() => {
+        clearTimeout(timer);
+        resolve();
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
+// ─── Subscribe Agent Events for Logging ───────────────────────────────────────
+
+function subscribeAgentEvents(agent: Agent, logger: Logger): () => void {
+  return agent.subscribe((event, _signal) => {
+    switch (event.type) {
+      case "agent_start":
+        logger.debug("agent.agent_start", {});
+        break;
+      case "agent_end":
+        logger.debug("agent.agent_end", { messageCount: event.messages.length });
+        break;
+      case "turn_start":
+        logger.debug("agent.turn_start", {});
+        break;
+      case "turn_end": {
+        const msg = event.message as AssistantMessage;
+        logger.debug("agent.turn_end", {
+          stopReason: msg.stopReason,
+          usage: msg.usage,
+        });
+        break;
+      }
+      case "tool_execution_start":
+        logger.debug("agent.tool_execution_start", {
+          toolName: event.toolName,
+        });
+        break;
+      case "tool_execution_end":
+        logger.debug("agent.tool_execution_end", {
+          toolName: event.toolName,
+          isError: event.isError,
+        });
+        break;
+    }
+  });
+}
+
 // ─── Narrative Director ───────────────────────────────────────────────────────
 
 export class NarrativeDirector {
@@ -428,15 +507,23 @@ export class NarrativeDirector {
       ? { ...model, baseUrl: process.env.ANTHROPIC_BASE_URL }
       : model;
 
-    const response = await completeSimple(resolvedModel, {
-      systemPrompt: buildSystemPrompt(this.prompt),
-      messages: [
-        { role: "user", content: userPrompt, timestamp: Date.now() },
-      ],
-      tools: [narrativeDecisionTool],
+    const agent = new Agent({
+      initialState: {
+        systemPrompt: buildSystemPrompt(this.prompt),
+        model: resolvedModel,
+        tools: [narrativeDecisionTool],
+      },
     });
 
-    const decision = extractDecisionFromToolCalls(response, this.logger);
+    const unsubscribe = subscribeAgentEvents(agent, this.logger);
+
+    try {
+      await promptWithTimeout(agent, userPrompt, 30000);
+    } finally {
+      unsubscribe();
+    }
+
+    const decision = extractDecisionFromToolCalls(agent, this.logger);
     const clamped = clampMessageText(decision);
 
     const safeStage = clampStage(
@@ -463,15 +550,20 @@ export class NarrativeDirector {
     await this.store.save(sessionId, memory, safeDecision);
 
     const latencyMs = Math.round(performance.now() - startMs);
+    const lastMsg = agent.state.messages[agent.state.messages.length - 1];
+    const usage =
+      lastMsg?.role === "assistant"
+        ? (lastMsg as AssistantMessage).usage
+        : undefined;
 
     this.logger.info("evaluate.end", {
       sessionId,
       latencyMs,
       stage: safeDecision.memoryUpdate.relationshipStage,
       action: safeDecision.routeDecision.action,
-      inputTokens: response.usage?.input,
-      outputTokens: response.usage?.output,
-      totalTokens: response.usage?.totalTokens,
+      inputTokens: usage?.input,
+      outputTokens: usage?.output,
+      totalTokens: usage?.totalTokens,
     });
 
     return safeDecision;

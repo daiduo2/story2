@@ -21,6 +21,7 @@
     }
     .search-box {
       margin: 30px 0;
+      position: relative;
     }
     #search-input {
       width: 100%;
@@ -29,10 +30,50 @@
       border: 1px solid #ccc;
       border-radius: 4px;
       font-family: inherit;
+      box-sizing: border-box;
     }
     #search-form {
       display: flex;
       gap: 10px;
+    }
+    .search-feedback {
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 14px;
+      animation: fadeIn 0.2s ease;
+    }
+    .search-found {
+      background: #e8f5e9;
+      color: #2c5f2d;
+      border: 1px solid #a5d6a7;
+    }
+    .search-not-found {
+      background: #ffebee;
+      color: #8b0000;
+      border: 1px solid #ef9a9a;
+    }
+    #search-history {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .search-history-item {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #e8e8e0;
+      border-radius: 12px;
+      font-size: 13px;
+      color: #555;
+      cursor: pointer;
+    }
+    .search-history-item:hover {
+      background: #d0d0c8;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     button {
       padding: 12px 24px;
@@ -81,14 +122,15 @@
       />
       <button type="submit">搜索</button>
     </form>
+    <div id="search-history"></div>
   </div>
 
   <div class="volume-list">
     <h2>档案卷宗</h2>
-    <a href="pages/volume-01.html">卷一：入院记录</a>
-    <a href="pages/volume-02.html">卷二：内科诊疗</a>
-    <a href="pages/volume-04.html">卷四：精神科观察</a>
-    <a href="pages/supplement-lin.html">附录：林素琴档案</a>
+    <a href="/pages/volume-01">卷一：入院记录</a>
+    <a href="/pages/volume-02">卷二：内科诊疗</a>
+    <a href="/pages/volume-04">卷四：精神科观察</a>
+    <a href="/pages/supplement-lin">附录：林素琴档案</a>
   </div>
 
   <footer>

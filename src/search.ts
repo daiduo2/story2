@@ -79,10 +79,103 @@ function getIndex(): Record<string, SearchEntry> {
   return { ...SEARCH_INDEX }
 }
 
+function getSessionId(): string | null {
+  return new URLSearchParams(location.search).get('sid')
+}
+
+function buildPageUrl(pageId: string): string {
+  const url = new URL(`/pages/${pageId}`, location.href)
+  const sid = getSessionId()
+  if (sid) url.searchParams.set('sid', sid)
+  return url.toString()
+}
+
+function showSearchFeedback(keyword: string, found: boolean): void {
+  const form = document.getElementById('search-form')
+  if (!form) return
+
+  const existing = document.getElementById('search-feedback')
+  if (existing) existing.remove()
+
+  const el = document.createElement('div')
+  el.id = 'search-feedback'
+  el.className = `search-feedback ${found ? 'search-found' : 'search-not-found'}`
+  el.textContent = found
+    ? `已定位相关档案，正在跳转...`
+    : `未找到与"${keyword}"相关的档案。`
+
+  form.parentNode?.insertBefore(el, form.nextSibling)
+
+  if (found) {
+    setTimeout(() => el.remove(), 1500)
+  } else {
+    setTimeout(() => el.remove(), 4000)
+  }
+}
+
+function renderSearchHistory(): void {
+  const sig = window.BaiLuBehavior?.getSignature()
+  if (!sig || sig.searches.length === 0) return
+
+  const container = document.getElementById('search-history')
+  if (!container) return
+
+  const recent = sig.searches.slice(-5).reverse()
+  container.innerHTML = recent.map(s =>
+    `<span class="search-history-item" data-keyword="${encodeURIComponent(s.query)}">${s.query}</span>`
+  ).join('')
+
+  container.querySelectorAll('.search-history-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const keyword = decodeURIComponent(item.getAttribute('data-keyword') || '')
+      executeSearch(keyword)
+    })
+  })
+}
+
+function executeSearch(keyword?: string): void {
+  const input = document.getElementById('search-input') as HTMLInputElement | null
+  if (!input) return
+
+  const q = (keyword ?? input.value).trim()
+  if (!q) return
+
+  if (!keyword && input) input.value = ''
+
+  const targetPage = window.BaiLuSearch?.handleSearch(q)
+
+  if (targetPage) {
+    showSearchFeedback(q, true)
+    setTimeout(() => {
+      location.assign(buildPageUrl(targetPage))
+    }, 300)
+  } else {
+    showSearchFeedback(q, false)
+  }
+
+  renderSearchHistory()
+}
+
+function initSearchUI(): void {
+  const form = document.getElementById('search-form')
+  const input = document.getElementById('search-input') as HTMLInputElement | null
+  if (!form || !input) return
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    executeSearch()
+  })
+
+  input.addEventListener('focus', () => {
+    renderSearchHistory()
+  })
+}
+
 export function initSearch() {
   window.BaiLuSearch = {
     handleSearch,
     resolveSearch,
     getIndex,
   }
+  initSearchUI()
 }
