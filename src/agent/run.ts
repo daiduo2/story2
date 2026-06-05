@@ -2,10 +2,12 @@ import { config } from "dotenv";
 config({ override: true });
 
 import { NarrativeDirector } from "./agent.js";
+import { ConsoleLogger } from "./logger.js";
 
 async function main() {
+  const logger = new ConsoleLogger("info");
   console.log("[run] Initializing NarrativeDirector...");
-  const director = new NarrativeDirector();
+  const director = new NarrativeDirector(logger);
   await director.init();
 
   const sessionId = `test_${Date.now()}`;

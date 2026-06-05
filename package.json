@@ -4,9 +4,9 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc -p tsconfig.frontend.json",
     "build:frontend": "tsc -p tsconfig.frontend.json",
-    "dev": "node --import=tsx dist/agent.js",
+    "dev": "node dist/agent/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -22,6 +22,7 @@
     "@types/node": "^25.9.1",
     "dotenv": "^17.4.2",
     "js-yaml": "^4.2.0",
+    "typebox": "^1.1.39",
     "typescript": "^6.0.3"
   },
   "devDependencies": {

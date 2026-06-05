@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import type { Logger } from "./logger.js";
 
 export interface GameEvent {
   type: string;
@@ -72,17 +73,22 @@ export interface Memory {
 
 export class MemoryStore {
   private dataDir: string;
+  private logger: Logger;
 
-  constructor(dataDir = "./baiLu-data/players") {
+  constructor(dataDir = "./baiLu-data/players", logger?: Logger) {
     this.dataDir = dataDir;
+    this.logger = logger ?? { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} };
   }
 
   async load(sessionId: string): Promise<Memory> {
     const filePath = path.join(this.dataDir, `${sessionId}.json`);
     try {
       const raw = await fs.readFile(filePath, "utf-8");
-      return JSON.parse(raw) as Memory;
-    } catch {
+      const memory = JSON.parse(raw) as Memory;
+      this.logger.info("memory.loaded", { sessionId, stage: memory.relationshipStage });
+      return memory;
+    } catch (err) {
+      this.logger.info("memory.created", { sessionId, reason: "file_not_found" });
       return this.createDefaultMemory();
     }
   }
@@ -112,6 +118,13 @@ export class MemoryStore {
       path.join(this.dataDir, `${sessionId}.json`),
       JSON.stringify(updated, null, 2)
     );
+
+    this.logger.info("memory.saved", {
+      sessionId,
+      stage: updated.relationshipStage,
+      depth: updated.understandingDepth,
+      decisionCount: updated.decisions.length,
+    });
   }
 
   private createDefaultMemory(): Memory {
