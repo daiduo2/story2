@@ -14,23 +14,31 @@ kill-port:
 	@lsof -ti:$(PORT) 2>/dev/null | xargs kill 2>/dev/null || true
 	@sleep 0.3
 
+LOG_DIR := log
+
 # Start the unified server (backend API + static files + dynamic markdown pages)
 dev: kill-port build
+	@mkdir -p $(LOG_DIR)
 	@echo "Starting server on port $(PORT)..."
-	@node dist/agent/server.js > .server.log 2>&1 & echo $$! > $(PID_FILE)
+	@node dist/agent/server.js & echo $$! > $(PID_FILE)
 	@sleep 2
 	@echo ""
 	@echo "Server started: http://localhost:$(PORT)"
+	@echo "Log directory:  $(LOG_DIR)/"
 	@echo ""
 	@echo "Run 'make stop' to stop"
+	@echo "Run 'make logs'  to list recent logs"
 
 # Stop server and force-release port
 stop:
 	@echo "Stopping server..."
 	@if [ -f $(PID_FILE) ]; then kill $$(cat $(PID_FILE)) 2>/dev/null || true; rm -f $(PID_FILE); fi
 	@lsof -ti:$(PORT) 2>/dev/null | xargs kill 2>/dev/null || true
-	@rm -f .server.log
 	@echo "Server stopped."
+
+# List recent log files
+logs:
+	@if [ -d $(LOG_DIR) ]; then ls -lt $(LOG_DIR) | head -10; else echo "No logs yet"; fi
 
 # Show running status
 status:
@@ -39,5 +47,5 @@ status:
 
 # Clean build artifacts and logs
 clean:
-	@rm -rf dist public/js $(PID_FILE) .server.log
+	@rm -rf dist public/js $(PID_FILE) $(LOG_DIR)
 	@echo "Cleaned build artifacts and logs."

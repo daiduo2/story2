@@ -20,48 +20,28 @@ import { noopLogger } from "./logger.js";
 // ─── TypeBox Schema ───────────────────────────────────────────────────────────
 
 const NarrativeDecisionSchema = Type.Object({
-  version: Type.Literal("narrative-v2"),
+  version: Type.String(),
   routeDecision: Type.Object({
-    action: Type.Union([
-      Type.Literal("stay"),
-      Type.Literal("redirect"),
-      Type.Literal("suggest"),
-    ]),
+    action: Type.String(),
     targetPage: Type.Optional(Type.String()),
     variantHint: Type.Optional(Type.String()),
   }),
   systemMessage: Type.Optional(
     Type.Object({
       text: Type.String(),
-      style: Type.Union([
-        Type.Literal("observational"),
-        Type.Literal("intimate"),
-        Type.Literal("confrontational"),
-        Type.Literal("invitational"),
-      ]),
+      style: Type.String(),
     })
   ),
   contentModules: Type.Array(
     Type.Object({
       moduleId: Type.String(),
       targetSelector: Type.String(),
-      position: Type.Union([
-        Type.Literal("before"),
-        Type.Literal("after"),
-        Type.Literal("replace"),
-      ]),
+      position: Type.String(),
     })
   ),
   memoryUpdate: Type.Object({
-    relationshipStage: Type.Union([
-      Type.Literal("unknown"),
-      Type.Literal("noticed"),
-      Type.Literal("watched"),
-      Type.Literal("understood"),
-      Type.Literal("confronted"),
-      Type.Literal("fused"),
-    ]),
-    understandingDepth: Type.Number({ minimum: 0, maximum: 100 }),
+    relationshipStage: Type.String(),
+    understandingDepth: Type.Number(),
     observedPatterns: Type.Array(Type.String()),
     notes: Type.String(),
   }),
@@ -71,15 +51,19 @@ type NarrativeDecisionPayload = Static<typeof NarrativeDecisionSchema>;
 
 // ─── Tool Definition ──────────────────────────────────────────────────────────
 
-const narrativeDecisionTool: AgentTool<typeof NarrativeDecisionSchema> = {
+export const narrativeDecisionTool: AgentTool<typeof NarrativeDecisionSchema> = {
   name: "narrative_decision",
   description: "根据玩家行为和当前情境，输出本轮叙事决策",
   label: "叙事决策",
   parameters: NarrativeDecisionSchema,
-  execute: async (_toolCallId, params) => ({
-    content: [{ type: "text" as const, text: "" }],
-    details: params,
-  }),
+  execute: async (_toolCallId, params) => {
+    const safeParams = params as Record<string, unknown>;
+    return {
+      content: [{ type: "text" as const, text: "决策已接收" }],
+      details: safeParams,
+      terminate: true,
+    };
+  },
 };
 
 // ─── Prompt Config Types ──────────────────────────────────────────────────────
@@ -122,7 +106,7 @@ async function loadPrompt(
 
 // ─── Evaluator ────────────────────────────────────────────────────────────────
 
-function getCuriosityVector(signature: PlayerSignature): string[] {
+export function getCuriosityVector(signature: PlayerSignature): string[] {
   const vector: string[] = [];
   const queries = signature.searches.map((s) => s.query);
 
@@ -153,7 +137,7 @@ function getCuriosityVector(signature: PlayerSignature): string[] {
 
 // ─── Message Clamp ────────────────────────────────────────────────────────────
 
-function clampMessageText(decision: NarrativeDecision): NarrativeDecision {
+export function clampMessageText(decision: NarrativeDecision): NarrativeDecision {
   if (!decision.systemMessage?.text) return decision;
 
   const sentences = decision.systemMessage.text
@@ -269,7 +253,7 @@ ${memory.relationshipStage}
 
 // ─── Stage Validation ─────────────────────────────────────────────────────────
 
-function clampStage(
+export function clampStage(
   proposed: string,
   current: string
 ): (typeof STAGE_ORDER)[number] {
@@ -286,99 +270,67 @@ function clampStage(
   return STAGE_ORDER[proposedIdx];
 }
 
-// ─── Extract Decision from Tool Call ──────────────────────────────────────────
+// ─── Extract Decision from Messages ───────────────────────────────────────────
 
-function extractDecisionFromToolCalls(
-  agent: Agent,
-  logger: Logger
-): NarrativeDecision {
+export function extractDecision(agent: Agent): NarrativeDecision {
   const messages = agent.state.messages;
-  const lastMessage = messages[messages.length - 1];
 
-  if (lastMessage?.role !== "assistant") {
-    throw new Error("Expected assistant message in agent state");
+  // 优先从 tool result message 的 details 提取
+  // details 来自 execute 的参数，已经过 validateToolArguments coerce
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role === "toolResult" && msg.toolName === "narrative_decision") {
+      return sanitizeDecision(msg.details as NarrativeDecision);
+    }
   }
 
-  const assistant = lastMessage as AssistantMessage;
-
-  if (assistant.stopReason === "error" || assistant.errorMessage) {
-    logger.error("llm.error_response", {
-      stopReason: assistant.stopReason,
-      errorMessage: assistant.errorMessage,
-      usage: assistant.usage,
-    });
-    throw new Error(
-      `LLM returned error: ${assistant.errorMessage || assistant.stopReason}`
-    );
+  // fallback：从 assistant message 的原始 toolCall 提取
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.role === "assistant") {
+      const toolCalls = msg.content.filter(
+        (c): c is Extract<typeof c, { type: "toolCall" }> =>
+          c.type === "toolCall"
+      );
+      if (toolCalls.length > 0) {
+        const raw = toolCalls[0].arguments as unknown as NarrativeDecision;
+        if (!Check(NarrativeDecisionSchema, raw)) {
+          return sanitizeDecision(raw);
+        }
+        return raw;
+      }
+    }
   }
 
-  const toolCalls = assistant.content.filter(
-    (c): c is Extract<typeof c, { type: "toolCall" }> =>
-      c.type === "toolCall"
-  );
-
-  if (toolCalls.length === 0) {
-    const textParts = assistant.content
-      .filter((c) => c.type === "text")
-      .map((c) => (c as { text: string }).text)
-      .join("");
-    logger.warn("llm.no_tool_call", {
-      textPreview: textPreview(textParts, 200),
-      stopReason: assistant.stopReason,
-    });
-    throw new Error("No tool call found in assistant response");
-  }
-
-  const raw = toolCalls[0].arguments as unknown as NarrativeDecision;
-
-  if (!Check(NarrativeDecisionSchema, raw)) {
-    logger.warn("llm.invalid_schema", {
-      issues: [...Errors(NarrativeDecisionSchema, raw)].map((e) => e.message),
-    });
-    return sanitizeDecision(raw, logger);
-  }
-
-  logger.info("llm.tool_call", {
-    toolName: toolCalls[0].name,
-    usage: assistant.usage,
-  });
-
-  return raw;
+  throw new Error("No narrative_decision found in agent messages");
 }
 
-function sanitizeDecision(
-  raw: NarrativeDecision,
-  logger: Logger
-): NarrativeDecision {
-  const validStyles: SystemMessage["style"][] = [
-    "observational",
-    "intimate",
-    "confrontational",
-    "invitational",
-  ];
-  const validActions: RouteDecision["action"][] = [
-    "stay",
-    "redirect",
-    "suggest",
-  ];
+export function sanitizeDecision(raw: NarrativeDecision): NarrativeDecision {
+  const validStyles = ["observational", "intimate", "confrontational", "invitational"] as const;
+  const validActions = ["stay", "redirect", "suggest"] as const;
+  const validStages = ["unknown", "noticed", "watched", "understood", "confronted", "fused"] as const;
 
-  const style =
-    raw.systemMessage?.style && validStyles.includes(raw.systemMessage.style)
-      ? raw.systemMessage.style
-      : "observational";
+  const style = validStyles.includes(raw.systemMessage?.style as any)
+    ? raw.systemMessage!.style
+    : "observational";
 
-  const action = validActions.includes(raw.routeDecision.action)
-    ? raw.routeDecision.action
+  const action = validActions.includes(raw.routeDecision?.action as any)
+    ? raw.routeDecision!.action
     : "stay";
+
+  const stage = validStages.includes(raw.memoryUpdate?.relationshipStage as any)
+    ? raw.memoryUpdate!.relationshipStage
+    : "unknown";
 
   const version = raw.version === "narrative-v2" ? raw.version : "narrative-v2";
 
+  const depth = raw.memoryUpdate?.understandingDepth;
   const clampedDepth = Math.max(
     0,
-    Math.min(100, raw.memoryUpdate.understandingDepth)
+    Math.min(100, depth === undefined ? 0 : depth)
   );
 
-  const result: NarrativeDecision = {
+  return {
     version,
     routeDecision: {
       ...raw.routeDecision,
@@ -390,17 +342,10 @@ function sanitizeDecision(
     contentModules: Array.isArray(raw.contentModules) ? raw.contentModules : [],
     memoryUpdate: {
       ...raw.memoryUpdate,
+      relationshipStage: stage,
       understandingDepth: clampedDepth,
     },
   };
-
-  logger.info("llm.sanitized", {
-    originalStyle: raw.systemMessage?.style,
-    originalAction: raw.routeDecision.action,
-    originalVersion: raw.version,
-  });
-
-  return result;
 }
 
 function textPreview(text: string, maxLen: number): string {
@@ -410,28 +355,24 @@ function textPreview(text: string, maxLen: number): string {
 
 // ─── Agent Prompt with Timeout ────────────────────────────────────────────────
 
-async function promptWithTimeout(
+export async function promptWithTimeout(
   agent: Agent,
   message: string,
   timeoutMs: number
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
       agent.abort();
       reject(new Error(`Agent timeout after ${timeoutMs}ms`));
     }, timeoutMs);
-
-    agent
-      .prompt(message)
-      .then(() => {
-        clearTimeout(timer);
-        resolve();
-      })
-      .catch((err) => {
-        clearTimeout(timer);
-        reject(err);
-      });
   });
+
+  try {
+    await Promise.race([agent.prompt(message), timeoutPromise]);
+  } finally {
+    clearTimeout(timer!);
+  }
 }
 
 // ─── Subscribe Agent Events for Logging ───────────────────────────────────────
@@ -443,30 +384,38 @@ function subscribeAgentEvents(agent: Agent, logger: Logger): () => void {
         logger.debug("agent.agent_start", {});
         break;
       case "agent_end":
-        logger.debug("agent.agent_end", { messageCount: event.messages.length });
+        logger.info("agent.agent_end", { messageCount: event.messages.length });
         break;
       case "turn_start":
-        logger.debug("agent.turn_start", {});
+        logger.info("agent.turn_start", {});
         break;
       case "turn_end": {
         const msg = event.message as AssistantMessage;
-        logger.debug("agent.turn_end", {
+        logger.info("agent.turn_end", {
           stopReason: msg.stopReason,
           usage: msg.usage,
         });
         break;
       }
       case "tool_execution_start":
-        logger.debug("agent.tool_execution_start", {
+        logger.info("agent.tool_execution_start", {
           toolName: event.toolName,
         });
         break;
-      case "tool_execution_end":
-        logger.debug("agent.tool_execution_end", {
-          toolName: event.toolName,
-          isError: event.isError,
+      case "tool_execution_end": {
+        const toolEnd = event as unknown as Record<string, unknown>;
+        logger.info("agent.tool_execution_end", {
+          toolName: (event as { toolName?: string }).toolName,
+          isError: (event as { isError?: boolean }).isError,
+          detailsPreview: toolEnd.details
+            ? JSON.stringify(toolEnd.details).slice(0, 500)
+            : undefined,
+          errorPreview: toolEnd.error
+            ? String(toolEnd.error).slice(0, 500)
+            : undefined,
         });
         break;
+      }
     }
   });
 }
@@ -480,7 +429,7 @@ export class NarrativeDirector {
 
   constructor(logger?: Logger) {
     this.store = new MemoryStore("./baiLu-data/players", logger);
-    this.logger = logger ?? noopLogger;
+    this.logger = logger || noopLogger;
   }
 
   async init(promptPath?: string) {
@@ -523,7 +472,7 @@ export class NarrativeDirector {
       unsubscribe();
     }
 
-    const decision = extractDecisionFromToolCalls(agent, this.logger);
+    const decision = extractDecision(agent);
     const clamped = clampMessageText(decision);
 
     const safeStage = clampStage(
