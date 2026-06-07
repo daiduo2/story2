@@ -167,8 +167,37 @@
 |------|------|
 | `notice.html` | 访客须知 —— **规则怪谈的核心载体** |
 | `about.html` | 关于本项目 —— 介绍林素琴，埋下伏笔 |
-| `archives.html` | 档案目录 —— 导航中枢，隐藏"待整理"条目 |
+| `archives.html` | 首页快照 —— 与首页结构相同但带有微妙差异的隐藏页面，通过 Agent 重定向进入 |
 | `search-results.html` | 搜索结果页 —— 未命中时展示 |
+
+#### D-1. 首页快照（archives）设计细则
+
+`archives` 不是传统意义上的"档案目录页"，而是一个与首页结构相同、内容几乎一致但带有微妙差异的**隐藏页面**。它的核心叙事功能是：让玩家偶然发现一个"不该存在的首页版本"，从而产生"系统是否有备份/旧版"的不安。
+
+**进入方式：**
+- 不从任何导航栏暴露。
+- 仅通过 **Agent 重定向** 进入：当玩家规则违反次数 ≥2 且处于 `watched` 阶段时，Agent 可能将 `routeDecision.action` 设为 `redirect`、`targetPage` 设为 `archives`。
+- 未来可扩展：在 `volume-22`（未归档记录志）正文中埋入隐藏链接 `/pages/archives` 作为次要入口。
+
+**与首页的差异清单（由 server.ts 动态注入）：**
+
+| 元素 | 首页 | archives 快照 |
+|------|------|--------------|
+| 页面标题 | 白鹿疗养院数字档案 | 白鹿疗养院数字档案 |
+| 档案列表来源 | 静态 HTML | **动态读取 `content/volumes/` 目录生成** |
+| 卷四标题 | 精神科评估志 | 精神科观察志（已修订） |
+| 卷廿二 | 未归档记录志 | ~~未归档记录志~~（已删除） |
+| 列表末尾 | 无 | 卷零 · 未命名（待整理）— 灰色小字 |
+| 页脚版权 | 2024 年市医学会档案分会 | 2023 年白鹿疗养院信息科 |
+| 搜索框 placeholder | 搜索档案... | 检索病历... |
+| 页码 | 无 | `01/24`（与 25 个条目矛盾） |
+
+**技术实现：**
+- `server.ts` 的 `renderPage` 在 `pageId === 'archives'` 时走特殊分支，不调用 `buildPageHtml` 的通用模板。
+- 档案列表通过 `fs.readdir('content/volumes')` 动态读取，确保首页和 archives 始终基于同一批内容。
+- 差异项在渲染时硬编码覆盖，不依赖 Markdown 内容。
+
+---
 
 #### E. 禁忌页（volume-00.html）
 
@@ -397,6 +426,7 @@ unknown ──→ noticed ──→ watched ──→ understood ──→ confr
 | 搜索"4楼"→"404" | 在拼凑核心谜团 | `acknowledge_curiosity` |
 | 在林素琴日志停留 >5分钟 | 对林素琴产生情感共鸣 | `deepen_empathy` |
 | 搜索"零"→访问卷零 | 意识到 meta 层面 | `escalate_directness` |
+| **规则违反 ≥2 次 + 处于 watched 阶段** | **在试探系统边界** | **`redirect_to_archives`** |
 | 复制内容 ≥3次 | 在保存证据 | `mirror_behavior` |
 | 反复访问同一页 | 在寻找变化 | `confirm_observation` |
 | 试图关闭页面 | 要结束 | `farewell_personalized` |

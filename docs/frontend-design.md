@@ -184,7 +184,9 @@ const SEARCH_INDEX: Record<string, SearchEntry> = {
   "监控": { page: "security-cctv", tier: "public" },
   "停电": { page: "power-outage", tier: "public" },
 
-  // === 隐藏关键词（Agent 路由）===
+  // 注：archives 页面不通过搜索暴露，仅由 Agent 重定向进入
+
+// === 隐藏关键词（Agent 路由）===
   "4楼": {
     type: "agent-routed",
     candidates: ["volume-04", "volume-08", "supplement-lin"],
@@ -501,6 +503,18 @@ function injectContentModule(module: ContentModuleRef) {
 }
 ```
 
+### 7.1 附：特殊重定向目标
+
+除常规页面外，`routeDecision.targetPage` 支持以下特殊目标：
+
+| 目标 | 触发条件 | 说明 |
+|------|---------|------|
+| `archives` | Agent 决策：`redirect_to_archives` | 首页快照页。与首页结构相同但带有微妙差异，不暴露于导航栏，仅由 Agent 在玩家规则违反 ≥2 次且处于 `watched` 阶段时重定向进入。 |
+
+`archives` 页面由服务端 `server.ts` 特殊渲染（不经过 `buildPageHtml` 的通用模板），其档案列表通过动态读取 `content/volumes/` 目录生成。
+
+---
+
 ### 7.2 内容模块加载策略
 
 ```typescript
@@ -626,3 +640,27 @@ HTML 模板中可用的变量（由 build-pages.ts 注入）：
 | `{{subtitle}}` | frontmatter.subtitle | `精神科评估志` |
 | `{{department}}` | frontmatter.department | `精神科` |
 | `{{source}}` | frontmatter.source | `市第三人民医院药房` |
+
+---
+
+## 十一、导航栏与特殊页面
+
+### 11.1 导航栏结构
+
+所有动态页面（由 `server.ts` 的 `buildPageHtml` 渲染）共享统一的导航栏：
+
+```html
+<nav>
+  <a href="/">首页</a>
+</nav>
+```
+
+注意：`archives` 页面已从导航栏中移除。该页面不通过常规导航暴露，仅由 Agent 重定向进入。
+
+### 11.2 特殊页面渲染
+
+| 页面 | 渲染方式 | 说明 |
+|------|---------|------|
+| 首页 (`/`) | 静态文件 `public/index.html` | 完整档案列表，静态链接 |
+| 常规内容页 (`/pages/:pageId`) | `buildPageHtml` 通用模板 | Markdown → HTML，统一导航栏和搜索框 |
+| `archives` (`/pages/archives`) | **特殊分支**，不经过 `buildPageHtml` | 动态生成首页快照结构，注入差异项 |

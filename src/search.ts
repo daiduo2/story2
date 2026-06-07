@@ -2,15 +2,48 @@ import type { SearchEntry } from './types'
 import type { BaiLuBehaviorAPI } from './behavior'
 
 const SEARCH_INDEX: Record<string, SearchEntry> = {
+  // volumes — 正编病历
   '入院': { page: 'volume-01', tier: 'public' },
   '内科': { page: 'volume-02', tier: 'public' },
+  '病程下': { page: 'volume-03', tier: 'public' },
   '精神科': { page: 'volume-04', tier: 'public' },
   '护理': { page: 'volume-05', tier: 'public' },
   '药房': { page: 'volume-06', tier: 'public' },
   '临终': { page: 'volume-07', tier: 'public' },
+  '建筑': { page: 'volume-08', tier: 'public' },
+  '膳食': { page: 'volume-09', tier: 'public' },
+  '安全': { page: 'volume-10', tier: 'public' },
+  '财务': { page: 'volume-11', tier: 'public' },
+  '人员': { page: 'volume-12', tier: 'public' },
+  '设备': { page: 'volume-13', tier: 'public' },
+  '感染': { page: 'volume-14', tier: 'public' },
+  '康复': { page: 'volume-15', tier: 'public' },
+  '会诊': { page: 'volume-16', tier: 'public' },
+  '家属': { page: 'volume-17', tier: 'public' },
+  '特殊': { page: 'volume-18', tier: 'public' },
+  '病例下': { page: 'volume-19', tier: 'public' },
+  '事故': { page: 'volume-20', tier: 'public' },
+  '调查下': { page: 'volume-21', tier: 'public' },
+  '未归档': { page: 'volume-22', tier: 'public' },
+  '异闻': { page: 'volume-23', tier: 'public' },
+  '异闻下': { page: 'volume-24', tier: 'public' },
+
+  // supplements
   '林素琴': { page: 'supplement-lin', tier: 'public' },
-  '监控': { page: 'security-cctv', tier: 'public' },
+
+  // peripherals
+  '急救': { page: 'ambulance-log', tier: 'public' },
+  '保洁': { page: 'cleaning-log', tier: 'public' },
+  '餐饮': { page: 'food-supply', tier: 'public' },
+  '太平间': { page: 'morgue-transfer', tier: 'public' },
+  '发药': { page: 'pharmacy-log', tier: 'public' },
   '停电': { page: 'power-outage', tier: 'public' },
+  '监控': { page: 'security-cctv', tier: 'public' },
+
+  // meta
+  '关于': { page: 'about', tier: 'public' },
+  '目录': { page: 'archives', tier: 'public' },
+  '须知': { page: 'notice', tier: 'public' },
 
   '4楼': { type: 'agent-routed', candidates: ['volume-04', 'volume-08', 'supplement-lin'], tier: 'hidden' },
   '404': { type: 'agent-routed', candidates: ['volume-04', 'supplement-lin'], tier: 'hidden' },
