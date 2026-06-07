@@ -64,7 +64,7 @@ function initRule3Detection() {
     if (injected && searchInput.value === injected) {
       window.BaiLuBehavior?.recordRuleViolation('rule_3', `搜索了注入的关键词：${injected}`)
     }
-  })
+  }, true)
 }
 
 // === Public API ===
