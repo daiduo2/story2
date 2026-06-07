@@ -76,5 +76,6 @@ export function initMain() {
   initRule3Detection()
 
   document.addEventListener('copy', handleCopyWithShift)
+  checkPageTimeout()
   setInterval(checkPageTimeout, 60000)
 }

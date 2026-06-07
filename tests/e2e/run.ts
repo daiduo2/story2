@@ -3,6 +3,9 @@ import { TestDirector } from "./agent/test-director.ts";
 import { CrawlerAgent } from "./agents/crawler-agent.ts";
 import { SearchAgent } from "./agents/search-agent.ts";
 import { NarrativeApiAgent } from "./agents/narrative-api-agent.ts";
+import { RulesAgent } from "./agents/rules-agent.ts";
+import { AnomalyAgent } from "./agents/anomaly-agent.ts";
+import { ArchivesAgent } from "./agents/archives-agent.ts";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -29,6 +32,9 @@ async function main(): Promise<void> {
       new CrawlerAgent(),
       new SearchAgent(),
       new NarrativeApiAgent(`http://localhost:3724`),
+      new RulesAgent(),
+      new AnomalyAgent(),
+      new ArchivesAgent(),
     ];
 
     const report = await director.run(agents);
