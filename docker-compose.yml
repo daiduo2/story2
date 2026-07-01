@@ -1,0 +1,22 @@
+services:
+  narrative:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: story2-narrative:latest
+    container_name: story2-narrative
+    restart: unless-stopped
+    ports:
+      - "3724:3724"
+    env_file:
+      - .env
+    volumes:
+      - ./baiLu-data:/app/baiLu-data
+      - ./log:/app/log
+      - ./content:/app/content:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3724/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
