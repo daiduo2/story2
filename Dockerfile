@@ -2,6 +2,8 @@ FROM docker.m.daocloud.io/library/node:22-alpine AS builder
 
 WORKDIR /app
 
+ENV CI=true
+
 RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
@@ -15,6 +17,8 @@ RUN pnpm run build
 FROM docker.m.daocloud.io/library/node:22-alpine AS runner
 
 WORKDIR /app
+
+ENV CI=true
 
 RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
 
