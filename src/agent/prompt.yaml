@@ -126,6 +126,7 @@ modules:
     trigger: "搜索'镜子'"
 
 constraints:
+  version: "narrative-v2"
   maxSentences: 3
   maxCharsPerSentence: 25
   noExclamation: true

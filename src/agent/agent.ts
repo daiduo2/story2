@@ -2,7 +2,6 @@ import { Agent } from "@earendil-works/pi-agent-core";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { getModel, Type } from "@earendil-works/pi-ai";
 import type { AssistantMessage, Static } from "@earendil-works/pi-ai";
-import { Check, Errors } from "typebox/value";
 import yaml from "js-yaml";
 import fs from "fs/promises";
 import {
@@ -20,28 +19,48 @@ import { noopLogger } from "./logger.js";
 // ─── TypeBox Schema ───────────────────────────────────────────────────────────
 
 const NarrativeDecisionSchema = Type.Object({
-  version: Type.String(),
+  version: Type.Literal("narrative-v2"),
   routeDecision: Type.Object({
-    action: Type.String(),
+    action: Type.Union([
+      Type.Literal("stay"),
+      Type.Literal("redirect"),
+      Type.Literal("suggest"),
+    ]),
     targetPage: Type.Optional(Type.String()),
     variantHint: Type.Optional(Type.String()),
   }),
   systemMessage: Type.Optional(
     Type.Object({
       text: Type.String(),
-      style: Type.String(),
+      style: Type.Union([
+        Type.Literal("observational"),
+        Type.Literal("intimate"),
+        Type.Literal("confrontational"),
+        Type.Literal("invitational"),
+      ]),
     })
   ),
   contentModules: Type.Array(
     Type.Object({
       moduleId: Type.String(),
       targetSelector: Type.String(),
-      position: Type.String(),
+      position: Type.Union([
+        Type.Literal("before"),
+        Type.Literal("after"),
+        Type.Literal("replace"),
+      ]),
     })
   ),
   memoryUpdate: Type.Object({
-    relationshipStage: Type.String(),
-    understandingDepth: Type.Number(),
+    relationshipStage: Type.Union([
+      Type.Literal("unknown"),
+      Type.Literal("noticed"),
+      Type.Literal("watched"),
+      Type.Literal("understood"),
+      Type.Literal("confronted"),
+      Type.Literal("fused"),
+    ]),
+    understandingDepth: Type.Number({ minimum: 0, maximum: 100 }),
     observedPatterns: Type.Array(Type.String()),
     notes: Type.String(),
   }),
@@ -83,7 +102,7 @@ interface PromptConfig {
     string,
     { source: string; description: string; trigger: string }
   >;
-  constraints: Record<string, number | boolean>;
+  constraints: Record<string, number | boolean | string>;
 }
 
 const STAGE_ORDER = [
@@ -146,13 +165,9 @@ export function clampMessageText(decision: NarrativeDecision): NarrativeDecision
 
   if (sentences.length <= 3) return decision;
 
-  return {
-    ...decision,
-    systemMessage: {
-      ...decision.systemMessage,
-      text: sentences.slice(0, 3).join("。") + "。",
-    },
-  };
+  throw new Error(
+    `System message exceeds 3 sentences (got ${sentences.length})`
+  );
 }
 
 // ─── System Prompt Builder ────────────────────────────────────────────────────
@@ -190,6 +205,7 @@ ${goalDescriptions}
 ${moduleDescriptions}
 
 约束：
+- 决策版本必须是 "${config.constraints.version}"
 - 最多 ${config.constraints.maxSentences} 句
 - 每句最多 ${config.constraints.maxCharsPerSentence} 字符
 - ${config.constraints.noExclamation ? "禁用感叹号" : ""}
@@ -264,7 +280,9 @@ export function clampStage(
     current as (typeof STAGE_ORDER)[number]
   );
 
-  if (proposedIdx === -1) return current as (typeof STAGE_ORDER)[number];
+  if (proposedIdx === -1) {
+    throw new Error(`Invalid stage: "${proposed}"`);
+  }
   if (proposedIdx < currentIdx) return current as (typeof STAGE_ORDER)[number];
 
   return STAGE_ORDER[proposedIdx];
@@ -275,77 +293,47 @@ export function clampStage(
 export function extractDecision(agent: Agent): NarrativeDecision {
   const messages = agent.state.messages;
 
-  // 优先从 tool result message 的 details 提取
-  // details 来自 execute 的参数，已经过 validateToolArguments coerce
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i];
     if (msg.role === "toolResult" && msg.toolName === "narrative_decision") {
-      return sanitizeDecision(msg.details as NarrativeDecision);
-    }
-  }
-
-  // fallback：从 assistant message 的原始 toolCall 提取
-  for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
-    if (msg.role === "assistant") {
-      const toolCalls = msg.content.filter(
-        (c): c is Extract<typeof c, { type: "toolCall" }> =>
-          c.type === "toolCall"
-      );
-      if (toolCalls.length > 0) {
-        const raw = toolCalls[0].arguments as unknown as NarrativeDecision;
-        if (!Check(NarrativeDecisionSchema, raw)) {
-          return sanitizeDecision(raw);
-        }
-        return raw;
-      }
+      return validateDecision(msg.details as NarrativeDecision);
     }
   }
 
   throw new Error("No narrative_decision found in agent messages");
 }
 
-export function sanitizeDecision(raw: NarrativeDecision): NarrativeDecision {
+export function validateDecision(raw: NarrativeDecision): NarrativeDecision {
   const validStyles = ["observational", "intimate", "confrontational", "invitational"] as const;
   const validActions = ["stay", "redirect", "suggest"] as const;
   const validStages = ["unknown", "noticed", "watched", "understood", "confronted", "fused"] as const;
 
-  const style = validStyles.includes(raw.systemMessage?.style as any)
-    ? raw.systemMessage!.style
-    : "observational";
+  if (raw.version !== "narrative-v2") {
+    throw new Error(`Invalid decision: version must be "narrative-v2", got "${raw.version}"`);
+  }
 
-  const action = validActions.includes(raw.routeDecision?.action as any)
-    ? raw.routeDecision!.action
-    : "stay";
+  if (!raw.routeDecision || !validActions.includes(raw.routeDecision.action as any)) {
+    throw new Error(`Invalid decision: route action "${raw.routeDecision?.action}" is not allowed`);
+  }
 
-  const stage = validStages.includes(raw.memoryUpdate?.relationshipStage as any)
-    ? raw.memoryUpdate!.relationshipStage
-    : "unknown";
+  if (raw.systemMessage && !validStyles.includes(raw.systemMessage.style as any)) {
+    throw new Error(`Invalid decision: message style "${raw.systemMessage.style}" is not allowed`);
+  }
 
-  const version = raw.version === "narrative-v2" ? raw.version : "narrative-v2";
+  if (!raw.memoryUpdate || !validStages.includes(raw.memoryUpdate.relationshipStage as any)) {
+    throw new Error(`Invalid decision: relationship stage "${raw.memoryUpdate?.relationshipStage}" is not allowed`);
+  }
 
-  const depth = raw.memoryUpdate?.understandingDepth;
-  const clampedDepth = Math.max(
-    0,
-    Math.min(100, depth === undefined ? 0 : depth)
-  );
+  const depth = raw.memoryUpdate.understandingDepth;
+  if (typeof depth !== "number" || depth < 0 || depth > 100) {
+    throw new Error(`Invalid decision: understandingDepth must be in [0, 100], got ${depth}`);
+  }
 
-  return {
-    version,
-    routeDecision: {
-      ...raw.routeDecision,
-      action,
-    },
-    systemMessage: raw.systemMessage
-      ? { ...raw.systemMessage, style }
-      : undefined,
-    contentModules: Array.isArray(raw.contentModules) ? raw.contentModules : [],
-    memoryUpdate: {
-      ...raw.memoryUpdate,
-      relationshipStage: stage,
-      understandingDepth: clampedDepth,
-    },
-  };
+  if (!Array.isArray(raw.contentModules)) {
+    throw new Error(`Invalid decision: contentModules must be an array`);
+  }
+
+  return raw;
 }
 
 function textPreview(text: string, maxLen: number): string {

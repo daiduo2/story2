@@ -85,19 +85,17 @@ function createFreshSignature(sessionId: string): PlayerSignature {
 
 function loadSignature(sessionId: string): PlayerSignature {
   const stored = localStorage.getItem(getStorageKey(sessionId))
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored)
-      if (isValidSignature(parsed)) {
-        parsed.returnVisit = true
-        parsed.lastActiveTime = Date.now()
-        return parsed
-      }
-    } catch {
-      // ignore parse error
-    }
+  if (!stored) {
+    return createFreshSignature(sessionId)
   }
-  return createFreshSignature(sessionId)
+
+  const parsed = JSON.parse(stored)
+  if (!isValidSignature(parsed)) {
+    throw new Error(`Corrupted behavior signature for session ${sessionId}`)
+  }
+  parsed.returnVisit = true
+  parsed.lastActiveTime = Date.now()
+  return parsed
 }
 
 function isValidSignature(value: unknown): value is PlayerSignature {
@@ -286,7 +284,15 @@ function handleScroll() {
 export function initBehavior() {
   ensureUrlHasSessionId()
   const sessionId = getOrCreateSessionId()
-  signature = loadSignature(sessionId)
+
+  try {
+    signature = loadSignature(sessionId)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('[BaiLuBehavior] Failed to load signature, resetting:', message)
+    reset()
+    signature = createFreshSignature(sessionId)
+  }
 
   window.BaiLuBehavior = {
     getSignature,

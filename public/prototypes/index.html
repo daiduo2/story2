@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>白鹿疗养院 · 复古 UI 模板集</title>
+  <link rel="stylesheet" href="/prototypes/css/prototype-retro.css">
+  <style>
+    .template-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .template-list li {
+      border: 1px solid var(--border-color);
+      margin-bottom: 12px;
+      padding: 14px 16px;
+      background: var(--note-bg);
+    }
+    .template-list h3 {
+      margin: 0 0 6px 0;
+      font-family: "SimSun", "STSong", "Songti SC", serif;
+      font-size: 1.1em;
+    }
+    .template-list p {
+      margin: 0;
+      color: var(--meta-color);
+      font-size: 0.9em;
+    }
+    .template-list a {
+      color: var(--link-color);
+      text-decoration: none;
+    }
+    .template-list a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body data-template="meta">
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：2004-03-17 14:32:07</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：BA-ARCH-1998-2015</span>
+      <span class="system-status">状态：正常运行</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title">白鹿疗养院病历数字化项目</h1>
+        <span class="site-subtitle">某市医学会档案分会 · 内部检索系统 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">内部资料</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <div class="container">
+      <a href="/" class="active">首页</a>
+      <a href="/pages/archives">档案目录</a>
+      <a href="/pages/notice">访客须知</a>
+      <a href="/pages/about">关于本项目</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <main>
+      <div class="doc-header">
+        <h1>复古 UI 模板集</h1>
+        <div class="doc-meta">
+          <span>视觉风格讨论稿 · 不代表最终上线版本</span>
+        </div>
+      </div>
+
+      <div class="home-intro">
+        <p>本目录用于集中展示「白鹿疗养院」不同内容类型的复古档案 UI 模板。每个模板对应一类内容页面的视觉与信息架构，供团队讨论确定最终风格后，再迁移到生产样式表。</p>
+      </div>
+
+      <ul class="template-list">
+        <li>
+          <h3><a href="/prototype-retro.html">01. 元信息页模板（meta）</a></h3>
+          <p>适用于首页、关于本项目、访客须知、档案目录等框架性页面。强调整体机构标识与导航结构。</p>
+        </li>
+        <li>
+          <h3><a href="/prototypes/volume.html">02. 正编病历模板（volume）</a></h3>
+          <p>适用于卷一至卷二十四等主体病历文档。突出卷号、年代、科室、页码等档案元信息。</p>
+        </li>
+        <li>
+          <h3><a href="/prototypes/supplement.html">03. 补遗档案模板（supplement）</a></h3>
+          <p>适用于林素琴日志等个人补遗材料。强调作者身份、手写痕迹与主观叙事。</p>
+        </li>
+        <li>
+          <h3><a href="/prototypes/peripheral.html">04. 外围档案模板（peripheral）</a></h3>
+          <p>适用于外部机构提供的监控、药房、供电等记录。强调来源机构与证据编号。</p>
+        </li>
+        <li>
+          <h3><a href="/prototypes/variant.html">05. 变体页模板（variant）</a></h3>
+          <p>适用于觉醒版、异常状态页面。展示反色、扫描线、系统错误弹窗等异常视觉。</p>
+        </li>
+      </ul>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制</p>
+      <p>录入机构：某市医学会档案分会 · 最后更新：2004 年 3 月 15 日</p>
+      <p class="footer-page-num">本页编号：BA-ARCH-PROTOTYPES-INDEX</p>
+    </div>
+  </footer>
+
+  <div class="paper-grain"></div>
+</body>
+</html>

@@ -2,11 +2,12 @@ import { describe, it, expect } from "vitest";
 import { buildPageHtml, parseFrontmatter, renderPage } from "./render.js";
 
 describe("buildPageHtml", () => {
-  it("should not contain archives link in nav", () => {
+  it("should contain navigation with home and archive links", () => {
     const html = buildPageHtml({ title: "测试" }, "<p>内容</p>");
     expect(html).toContain("<a href=\"/\">首页</a>");
-    expect(html).not.toContain("档案检索");
-    expect(html).not.toContain("/pages/archives");
+    expect(html).toContain("/pages/archives");
+    expect(html).toContain("访客须知");
+    expect(html).toContain("关于本项目");
   });
 
   it("should contain search box with default placeholder", () => {
@@ -14,9 +15,13 @@ describe("buildPageHtml", () => {
     expect(html).toContain('placeholder="搜索档案..."');
   });
 
-  it("should contain default footer", () => {
-    const html = buildPageHtml({ title: "测试" }, "<p>内容</p>");
-    expect(html).toContain("白鹿疗养院病历数字化项目 | 内部资料");
+  it("should handle numeric metadata values by coercing to strings", () => {
+    const html = buildPageHtml(
+      { title: "卷十九", template: "volume", year: 2015 as unknown as string, department: "精神科" },
+      "<p>正文</p>"
+    );
+    expect(html).toContain("2015");
+    expect(html).toContain("精神科");
   });
 });
 
@@ -50,9 +55,9 @@ describe("renderPage archives snapshot", () => {
     expect(html).toContain("<title>白鹿疗养院数字档案</title>");
     expect(html).toContain("<h1>白鹿疗养院数字档案</h1>");
 
-    // 导航栏只保留首页
+    // 导航栏包含完整链接
     expect(html).toContain("<a href=\"/\">首页</a>");
-    expect(html).not.toContain("档案检索");
+    expect(html).toContain("/pages/archives");
 
     // 搜索框 placeholder 差异
     expect(html).toContain('placeholder="检索病历..."');
@@ -85,5 +90,48 @@ describe("renderPage archives snapshot", () => {
     const html = await renderPage("volume-01");
     expect(html).toContain("入院登记志");
     expect(html).toContain('placeholder="搜索档案..."');
+  });
+});
+
+describe("template routing", () => {
+  it("should route volume template to volume layout", () => {
+    const html = buildPageHtml(
+      { title: "卷四 · 精神科评估志", template: "volume", department: "精神科", year: "2005–2010", page_num: "07/24" },
+      "<p>正文</p>"
+    );
+    expect(html).toContain('data-template="volume"');
+    expect(html).toContain("科室：");
+    expect(html).toContain("精神科");
+    expect(html).toContain("时间范围：");
+    expect(html).toContain("2005–2010");
+  });
+
+  it("should route supplement template to supplement layout", () => {
+    const html = buildPageHtml(
+      { title: "林素琴护士长的值班日志", template: "supplement", author: "林素琴", author_meta: "1960–2015 · 护士长", years: "1998–2015" },
+      "<p>正文</p>"
+    );
+    expect(html).toContain('data-template="supplement"');
+    expect(html).toContain("林素琴");
+    expect(html).toContain("1960–2015 · 护士长");
+  });
+
+  it("should route peripheral template to peripheral layout", () => {
+    const html = buildPageHtml(
+      { title: "市第三人民医院药房发药记录", template: "peripheral", source: "市第三人民医院药房", archive_id: "PH-2015-0315" },
+      "<p>正文</p>"
+    );
+    expect(html).toContain('data-template="peripheral"');
+    expect(html).toContain("PH-2015-0315");
+    expect(html).toContain("市第三人民医院药房");
+  });
+
+  it("should route meta template to meta layout", () => {
+    const html = buildPageHtml(
+      { title: "访客须知", template: "meta", page_num: "02/24" },
+      "<p>正文</p>"
+    );
+    expect(html).toContain('data-template="meta"');
+    expect(html).toContain("02/24");
   });
 });

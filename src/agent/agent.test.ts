@@ -4,7 +4,7 @@ import type { Agent } from '@earendil-works/pi-agent-core'
 import type { AssistantMessage, ToolResultMessage } from '@earendil-works/pi-ai'
 import {
   narrativeDecisionTool,
-  sanitizeDecision,
+  validateDecision,
   extractDecision,
   promptWithTimeout,
   clampMessageText,
@@ -25,75 +25,72 @@ describe('agent', () => {
     })
   })
 
-  describe('sanitizeDecision', () => {
+  describe('validateDecision', () => {
     it('returns valid decision unchanged', () => {
       const decision = validDecision()
-      expect(sanitizeDecision(decision)).toEqual(decision)
+      expect(validateDecision(decision)).toEqual(decision)
     })
 
-    it('falls back invalid style to observational', () => {
+    it('rejects invalid style', () => {
       const decision = {
         ...validDecision(),
         systemMessage: { text: '你好', style: 'invalid' },
       }
-      const result = sanitizeDecision(decision)
-      expect(result.systemMessage?.style).toBe('observational')
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
 
-    it('falls back invalid action to stay', () => {
+    it('rejects invalid action', () => {
       const decision = {
         ...validDecision(),
         routeDecision: { action: 'invalid' as any, targetPage: 'x' },
       }
-      const result = sanitizeDecision(decision)
-      expect(result.routeDecision.action).toBe('stay')
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
 
-    it('falls back invalid version to narrative-v2', () => {
+    it('rejects invalid version', () => {
       const decision = { ...validDecision(), version: 'wrong' }
-      expect(sanitizeDecision(decision).version).toBe('narrative-v2')
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
 
-    it('clamps understandingDepth to [0, 100]', () => {
-      expect(
-        sanitizeDecision({
+    it('rejects understandingDepth above 100', () => {
+      expect(() =>
+        validateDecision({
           ...validDecision(),
           memoryUpdate: { ...validDecision().memoryUpdate, understandingDepth: 150 },
-        }).memoryUpdate.understandingDepth
-      ).toBe(100)
+        })
+      ).toThrow('Invalid decision')
+    })
 
-      expect(
-        sanitizeDecision({
+    it('rejects understandingDepth below 0', () => {
+      expect(() =>
+        validateDecision({
           ...validDecision(),
           memoryUpdate: { ...validDecision().memoryUpdate, understandingDepth: -10 },
-        }).memoryUpdate.understandingDepth
-      ).toBe(0)
+        })
+      ).toThrow('Invalid decision')
     })
 
-    it('handles missing routeDecision without crashing', () => {
+    it('rejects missing routeDecision', () => {
       const decision = { ...validDecision() } as any
       delete decision.routeDecision
-      const result = sanitizeDecision(decision)
-      expect(result.routeDecision.action).toBe('stay')
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
 
-    it('handles missing memoryUpdate without crashing', () => {
+    it('rejects missing memoryUpdate', () => {
       const decision = { ...validDecision() } as any
       delete decision.memoryUpdate
-      const result = sanitizeDecision(decision)
-      expect(result.memoryUpdate.understandingDepth).toBe(0)
-      expect(result.memoryUpdate.relationshipStage).toBe('unknown')
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
 
-    it('handles missing systemMessage without crashing', () => {
+    it('allows missing systemMessage', () => {
       const decision = { ...validDecision() } as any
       delete decision.systemMessage
-      expect(sanitizeDecision(decision).systemMessage).toBeUndefined()
+      expect(validateDecision(decision)).toEqual(decision)
     })
 
-    it('falls back non-array contentModules to empty array', () => {
+    it('rejects non-array contentModules', () => {
       const decision = { ...validDecision(), contentModules: null } as any
-      expect(sanitizeDecision(decision).contentModules).toEqual([])
+      expect(() => validateDecision(decision)).toThrow('Invalid decision')
     })
   })
 
@@ -122,43 +119,26 @@ describe('agent', () => {
       expect(extractDecision(agent)).toEqual(decision)
     })
 
-    it('falls back to assistant toolCall arguments when no toolResult', () => {
-      const decision = validDecision()
+    it('throws when toolResult details are invalid', () => {
       const agent = mockAgent([
         { role: 'user', content: [{ type: 'text', text: 'hi' }] },
         {
           role: 'assistant',
-          content: [
-            { type: 'toolCall', id: '1', name: 'narrative_decision', arguments: decision },
-          ],
+          content: [{ type: 'toolCall', id: '1', name: 'narrative_decision', arguments: {} }],
           stopReason: 'toolUse',
         } as AssistantMessage,
+        {
+          role: 'toolResult',
+          toolCallId: '1',
+          toolName: 'narrative_decision',
+          details: { version: 'wrong' },
+          isError: false,
+        } as ToolResultMessage,
       ])
-      expect(extractDecision(agent)).toEqual(decision)
+      expect(() => extractDecision(agent)).toThrow('Invalid decision')
     })
 
-    it('finds correct assistant among multiple messages', () => {
-      const decision = validDecision()
-      const agent = mockAgent([
-        { role: 'user', content: [{ type: 'text', text: 'first' }] },
-        {
-          role: 'assistant',
-          content: [{ type: 'text', text: 'no tool' }],
-          stopReason: 'stop',
-        } as AssistantMessage,
-        { role: 'user', content: [{ type: 'text', text: 'second' }] },
-        {
-          role: 'assistant',
-          content: [
-            { type: 'toolCall', id: '1', name: 'narrative_decision', arguments: decision },
-          ],
-          stopReason: 'toolUse',
-        } as AssistantMessage,
-      ])
-      expect(extractDecision(agent)).toEqual(decision)
-    })
-
-    it('throws when no tool call or tool result found', () => {
+    it('throws when no tool result found', () => {
       const agent = mockAgent([
         { role: 'user', content: [{ type: 'text', text: 'hi' }] },
         {
@@ -226,13 +206,12 @@ describe('agent', () => {
       expect(clampMessageText(decision)).toEqual(decision)
     })
 
-    it('truncates to first 3 sentences when more than 3', () => {
+    it('throws when systemMessage has more than 3 sentences', () => {
       const decision = {
         ...validDecision(),
         systemMessage: { text: '一。二。三。四。五。', style: 'observational' },
       }
-      const result = clampMessageText(decision)
-      expect(result.systemMessage!.text).toBe('一。二。三。')
+      expect(() => clampMessageText(decision)).toThrow('System message exceeds 3 sentences')
     })
 
     it('returns decision unchanged when no systemMessage', () => {
@@ -250,8 +229,8 @@ describe('agent', () => {
       expect(clampStage('noticed', 'watched')).toBe('watched')
     })
 
-    it('returns current for invalid stage', () => {
-      expect(clampStage('invalid', 'noticed')).toBe('noticed')
+    it('throws for invalid stage name', () => {
+      expect(() => clampStage('invalid', 'noticed')).toThrow('Invalid stage')
     })
   })
 

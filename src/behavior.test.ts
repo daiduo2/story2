@@ -67,6 +67,23 @@ describe('behavior', () => {
       expect(sig.copies).toBe(3)
       expect(sig.returnVisit).toBe(true)
     })
+
+    it('resets signature from localStorage if corrupted', async () => {
+      localStorage.setItem('bailu_sig_sess-123', 'not-json')
+      window.history.replaceState(null, '', '/?sid=sess-123')
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const { initBehavior } = await loadBehavior()
+      initBehavior()
+      const sig = window.BaiLuBehavior!.getSignature()
+      expect(sig.sessionId).toBe('sess-123')
+      expect(sig.pagesVisited).toEqual([])
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to load signature'),
+        expect.any(String)
+      )
+      consoleSpy.mockRestore()
+    })
   })
 
   describe('recordPageVisit', () => {

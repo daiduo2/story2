@@ -1,0 +1,449 @@
+/* 白鹿疗养院 · 复古档案 UI 样例 */
+/* 设计目标：伪装成 2000 年代中式医院档案内网 */
+
+:root {
+  --bg-color: #e6e6e2;
+  --text-color: #1a1a1a;
+  --accent-color: #4a6741;
+  --accent-dark: #2f4528;
+  --border-color: #999999;
+  --header-bg: #d4d4d0;
+  --link-color: #1e3a5f;
+  --link-hover: #8b0000;
+  --red-text: #8b0000;
+  --meta-color: #555555;
+  --stamp-color: #aa0000;
+  --note-bg: #ddddda;
+  --table-header-bg: #c8c8c4;
+  --table-alt-bg: #e0e0dc;
+  --button-bg: #d4d4d0;
+  --button-active-bg: #b8b8b4;
+  --input-bg: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+}
+
+/* 传统宋体优先：中易宋体(Windows) > 华文宋体(macOS) > 思源宋体 > 通用 serif */
+body {
+  font-family: "SimSun", "STSong", "Songti SC", "Source Han Serif SC", "Noto Serif CJK SC", "AR PL UMing", serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 760px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* 纸张纹理覆盖层 */
+.paper-grain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.02) 0px,
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.015) 0px,
+      rgba(0, 0, 0, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+}
+
+/* 系统状态栏 */
+.system-bar {
+  background-color: #2c5f2d;
+  color: #ffffff;
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  font-size: 12px;
+  padding: 4px 0;
+  border-bottom: 2px solid #1e3f1f;
+}
+
+.system-bar .container {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.system-status {
+  color: #c8e6c9;
+}
+
+/* Header */
+.site-header {
+  background-color: var(--header-bg);
+  border-bottom: 2px solid var(--border-color);
+  padding: 16px 0 14px;
+}
+
+.site-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.site-title {
+  margin: 0;
+  font-family: "SimSun", "STSong", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.6em;
+  font-weight: bold;
+  letter-spacing: 0.02em;
+  color: var(--text-color);
+}
+
+.site-subtitle {
+  display: block;
+  font-family: "SimSun", "STSong", serif;
+  font-size: 0.85em;
+  color: var(--meta-color);
+  margin-top: 4px;
+}
+
+.header-right {
+  margin-left: 20px;
+}
+
+.stamp {
+  color: var(--stamp-color);
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  font-weight: bold;
+  font-size: 1.1em;
+  border: 2px solid var(--stamp-color);
+  display: inline-block;
+  padding: 4px 10px;
+  transform: rotate(-3deg);
+  opacity: 0.85;
+  letter-spacing: 0.1em;
+}
+
+/* Navigation */
+.site-nav {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0;
+  margin-bottom: 0;
+}
+
+.site-nav .container {
+  display: flex;
+  gap: 2px;
+}
+
+.site-nav a {
+  display: block;
+  padding: 8px 18px;
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  color: var(--text-color);
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-bottom: none;
+  font-size: 0.95em;
+  background-color: var(--header-bg);
+}
+
+.site-nav a:hover {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+  text-decoration: underline;
+}
+
+.site-nav a.active {
+  background-color: var(--bg-color);
+  border-color: var(--border-color);
+  border-bottom: 1px solid var(--bg-color);
+  margin-bottom: -1px;
+  font-weight: bold;
+}
+
+/* Main content */
+main {
+  padding: 20px 0;
+}
+
+.doc-header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.doc-header h1 {
+  margin: 0 0 8px 0;
+  font-family: "SimSun", "STSong", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.doc-meta {
+  color: var(--meta-color);
+  font-size: 0.9em;
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-num {
+  font-family: "Courier New", "SimSun", "NSimSun", monospace;
+  color: var(--meta-color);
+}
+
+.page-num.glitch {
+  color: var(--red-text);
+  font-weight: bold;
+}
+
+/* Search panel */
+.search-panel {
+  background-color: var(--note-bg);
+  border: 1px solid var(--border-color);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-panel label {
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+
+#search-form {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+}
+
+#search-input {
+  flex: 1;
+  padding: 3px 6px;
+  font-family: "SimSun", "Courier New", monospace;
+  font-size: 13px;
+  border: 1px solid #808080;
+  border-top-color: #404040;
+  border-left-color: #404040;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+  background: var(--input-bg);
+  color: var(--text-color);
+  border-radius: 0;
+}
+
+#search-input:focus {
+  outline: 1px dotted #000000;
+  outline-offset: -3px;
+}
+
+button,
+.btn-secondary {
+  padding: 3px 14px;
+  background: var(--button-bg);
+  color: #000000;
+  border: 1px solid #808080;
+  border-top-color: #ffffff;
+  border-left-color: #ffffff;
+  border-right-color: #404040;
+  border-bottom-color: #404040;
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  cursor: default;
+  border-radius: 0;
+}
+
+button:active,
+.btn-secondary:active {
+  background: var(--button-active-bg);
+  border-top-color: #404040;
+  border-left-color: #404040;
+  border-right-color: #ffffff;
+  border-bottom-color: #ffffff;
+}
+
+/* Home intro */
+.home-intro {
+  background: var(--note-bg);
+  border: 1px solid var(--border-color);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.home-intro p {
+  text-indent: 2em;
+  margin: 0 0 0.8em 0;
+}
+
+.home-intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* Sections */
+.home-section {
+  margin-bottom: 24px;
+}
+
+.home-section h2 {
+  font-family: "SimSun", "STSong", "Songti SC", "Source Han Serif SC", serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+
+.home-section ul {
+  padding-left: 1.6em;
+  margin: 0;
+}
+
+.home-section li {
+  margin-bottom: 0.4em;
+}
+
+/* Tables */
+.archive-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 12px 0;
+  font-size: 0.95em;
+  border: 1px solid var(--border-color);
+}
+
+.archive-table th,
+.archive-table td {
+  border: 1px solid var(--border-color);
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.archive-table th {
+  background-color: var(--table-header-bg);
+  font-family: "SimHei", "STHeiti", "Heiti SC", "Microsoft YaHei", sans-serif;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.archive-table tr:nth-child(even) {
+  background-color: var(--table-alt-bg);
+}
+
+.archive-table td {
+  font-family: "SimSun", "STSong", serif;
+}
+
+.archive-table a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.archive-table a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.mono {
+  font-family: "Courier New", "SimSun", "NSimSun", monospace;
+}
+
+.more-link {
+  text-align: right;
+  margin: 8px 0 0 0;
+  font-size: 0.9em;
+}
+
+.more-link a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.more-link a:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+/* Footer */
+.site-footer {
+  margin-top: 30px;
+  padding: 16px 0 20px;
+  border-top: 2px solid var(--border-color);
+  background-color: var(--header-bg);
+  color: var(--meta-color);
+  font-size: 0.85em;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 3px 0;
+}
+
+.footer-page-num {
+  font-family: "Courier New", "SimSun", "NSimSun", monospace;
+  color: var(--meta-color);
+}
+
+/* Responsive fallback - 旧系统不需要精致响应式 */
+@media (max-width: 780px) {
+  .container {
+    width: auto;
+    margin: 0 10px;
+  }
+
+  .system-bar .container {
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+
+  .site-header .container {
+    flex-direction: column;
+  }
+
+  .header-right {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .search-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #search-form {
+    flex-wrap: wrap;
+  }
+
+  #search-input {
+    width: 100%;
+  }
+}

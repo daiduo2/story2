@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERROR</title>
+  <link rel="stylesheet" href="/prototypes/css/prototype-retro.css">
+  <style>
+    :root {
+      --bg-color: #0f1419;
+      --text-color: #c8cdd5;
+      --accent-color: #8b6b4a;
+      --border-color: #3a3530;
+      --header-bg: #1a1a1e;
+      --link-color: #8ba4be;
+      --link-hover: #c8cdd5;
+      --red-text: #c85555;
+      --meta-color: #888888;
+      --stamp-color: #c85555;
+      --note-bg: #1a1a1e;
+      --table-header-bg: #2a2a2e;
+      --table-alt-bg: #15151a;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      animation: screen-flicker 4s infinite;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    .system-bar {
+      background-color: #5a1a1a;
+      border-bottom-color: #3a0a0a;
+    }
+
+    .system-status {
+      color: #ff9999;
+      animation: blink 1s step-end infinite;
+    }
+
+    .site-header,
+    .site-nav,
+    .site-footer {
+      background-color: var(--header-bg);
+      border-color: var(--border-color);
+    }
+
+    .site-nav a {
+      background-color: var(--header-bg);
+      color: var(--text-color);
+    }
+
+    .site-nav a:hover,
+    .site-nav a.active {
+      background-color: var(--bg-color);
+      border-color: var(--border-color);
+    }
+
+    .stamp {
+      border-color: var(--stamp-color);
+      color: var(--stamp-color);
+      transform: rotate(-5deg);
+    }
+
+    main h2 {
+      font-family: "SimSun", "STSong", "Songti SC", serif;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.8em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      color: var(--text-color);
+    }
+
+    main p {
+      text-indent: 2em;
+      margin: 0 0 0.8em 0;
+      text-align: justify;
+    }
+
+    .red-text {
+      color: var(--red-text) !important;
+      font-weight: bold;
+    }
+
+    .awakened-insert {
+      border-left: 3px solid var(--red-text);
+      background: rgba(200, 85, 85, 0.08);
+      padding: 14px 18px;
+      margin: 1.5em 0 1.5em 1.5em;
+      color: #d89999;
+      font-family: "KaiTi", "STKaiti", "楷体", serif;
+      font-size: 1.05em;
+    }
+
+    .error-dialog {
+      background: #c0c0c0;
+      color: #000;
+      border: 2px solid #fff;
+      border-top-color: #fff;
+      border-left-color: #fff;
+      border-right-color: #404040;
+      border-bottom-color: #404040;
+      max-width: 420px;
+      margin: 20px auto;
+      font-family: "SimHei", "STHeiti", sans-serif;
+    }
+
+    .error-dialog-title {
+      background: #000080;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 0.9em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .error-dialog-body {
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .error-icon {
+      font-size: 2em;
+      color: #ff0000;
+      line-height: 1;
+    }
+
+    .error-message {
+      font-size: 0.9em;
+      line-height: 1.5;
+    }
+
+    .error-dialog-actions {
+      padding: 0 16px 16px;
+      text-align: center;
+    }
+
+    .error-dialog-actions button {
+      min-width: 80px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes screen-flicker {
+      0%, 100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.97; }
+      94% { opacity: 1; }
+      96% { opacity: 0.98; }
+      97% { opacity: 1; }
+    }
+  </style>
+</head>
+<body data-template="variant">
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：????-??-?? ??:??:??</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：BA-ARCH-VOL-00</span>
+      <span class="system-status">状态：数据异常</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title">白鹿疗养院病历数字化项目</h1>
+        <span class="site-subtitle">某市医学会档案分会 · 内部检索系统 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">禁止查阅</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <div class="container">
+      <a href="/">首页</a>
+      <a href="/pages/archives">档案目录</a>
+      <a href="/pages/notice">访客须知</a>
+      <a href="/pages/about">关于本项目</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <main>
+      <div class="doc-header">
+        <h1 style="color: var(--red-text);">卷零 · 未归档记录</h1>
+        <div class="doc-meta">
+          <span>异常档案 · 来源不明</span>
+          <span class="page-num" id="page-num">第 00 页 / 共 24 页</span>
+        </div>
+      </div>
+
+      <div class="error-dialog">
+        <div class="error-dialog-title">
+          <span>系统错误</span>
+          <span>×</span>
+        </div>
+        <div class="error-dialog-body">
+          <div class="error-icon">⚠</div>
+          <div class="error-message">
+            检索到未编入正编的档案条目。<br>
+            该页面不在原始目录中。<br>
+            继续阅读可能被系统记录。
+          </div>
+        </div>
+        <div class="error-dialog-actions">
+          <button onclick="history.back()">返回</button>
+          <button>继续查看</button>
+        </div>
+      </div>
+
+      <h2>一、异常记录</h2>
+      <p>本院建筑共 3 层。所有官方图纸、验收记录、消防档案均确认本院建筑为 3 层。以下记录未出现在任何正编病历中，来源无法核实。</p>
+
+      <div class="awakened-insert">
+        <span class="red-text">【批注】</span> 它不在图纸里，但它在灯光里。你在 3 楼走廊尽头向上看的时候，难道没有看见那扇门吗？
+      </div>
+
+      <h2>二、患者陈述摘录</h2>
+      <p><span class="red-text">编号未知 · 时间未知 · 科室未知</span></p>
+      <p>"4 楼的长廊比 3 楼长很多。我走了很久，才走到那扇黑色的门前。门后面有人在说话，但我听不清。"</p>
+      <p>"林护士站在楼梯口，她看着我，没有说话。她的影子被灯拉得很长，一直延伸到 4 楼。"</p>
+      <p>"不要坐电梯到 4 楼。电梯按钮上原本没有 4，但是有时候，灯会亮一下。"</p>
+
+      <h2>三、系统提示</h2>
+      <p>您已访问受限档案。本次访问已被记录。如需申诉，请联系档案分会数字化一组。联系电话：████████。</p>
+
+      <hr style="border: none; border-top: 1px solid var(--border-color); margin: 2em 0;">
+      <p style="text-align: center; color: var(--meta-color); font-size: 0.9em;">【数据中断】</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制</p>
+      <p>录入机构：某市医学会档案分会 · 最后更新：???? 年 ? 月 ? 日</p>
+      <p class="footer-page-num">本页编号：BA-ARCH-VOL-000-00</p>
+    </div>
+  </footer>
+
+  <div class="paper-grain"></div>
+  <div class="scanlines"></div>
+
+  <script>
+    document.title = 'ERROR';
+    setInterval(function() {
+      var titles = ['ERROR', '白鹿疗养院', 'ERROR', '你看到了'];
+      document.title = titles[Math.floor(Math.random() * titles.length)];
+    }, 1800);
+
+    setTimeout(function() {
+      var pageNum = document.getElementById('page-num');
+      if (pageNum) {
+        pageNum.textContent = '第 ?? 页 / 共 24 页';
+        pageNum.classList.add('red-text');
+      }
+    }, 2500);
+  </script>
+</body>
+</html>

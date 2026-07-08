@@ -26,63 +26,298 @@ export function parseFrontmatter(content: string): { metadata: Record<string, st
   return { metadata: {}, body: content.trim() };
 }
 
-export function buildPageHtml(metadata: Record<string, string>, contentHtml: string): string {
-  const title = metadata.title || "白鹿疗养院数字档案";
-  const pageNum = metadata.page_num || "";
+function escapeHtml(text: unknown): string {
+  const value = text === null || text === undefined ? "" : String(text);
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+interface WrapperOptions {
+  title: string;
+  pageNum?: string;
+  template?: string;
+  bodyHtml: string;
+  footerText?: string;
+  archiveId?: string;
+}
+
+function buildBaseWrapper(options: WrapperOptions): string {
+  const title = escapeHtml(options.title || "白鹿疗养院数字档案");
+  const pageNum = options.pageNum ? `<span class="page-num">${escapeHtml(options.pageNum)}</span>` : "";
+  const templateAttr = options.template ? ` data-template="${escapeHtml(options.template)}"` : "";
+  const footerText = options.footerText || "白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制";
+  const archiveId = escapeHtml(options.archiveId || "BA-ARCH-1998-2015");
+
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <style>
-    body { font-family: 'Noto Serif SC', 'SimSun', serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f5f5f0; color: #333; line-height: 1.8; }
-    h1 { color: #2c5f2d; border-bottom: 2px solid #2c5f2d; padding-bottom: 10px; font-size: 1.8em; }
-    h2 { color: #3a7a3c; margin-top: 2em; font-size: 1.4em; }
-    h3 { color: #4a4a4a; margin-top: 1.5em; }
-    a { color: #2c5f2d; text-decoration: none; }
-    a:hover { color: #1e401f; }
-    nav { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
-    nav a { margin-right: 15px; }
-    .search-box { margin: 20px 0; position: relative; }
-    #search-form { display: flex; gap: 10px; }
-    #search-input { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
-    button { padding: 10px 20px; background: #2c5f2d; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; }
-    button:hover { background: #1e401f; }
-    .search-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 4px; font-size: 14px; animation: fadeIn 0.2s ease; }
-    .search-found { background: #e8f5e9; color: #2c5f2d; border: 1px solid #a5d6a7; }
-    .search-not-found { background: #ffebee; color: #8b0000; border: 1px solid #ef9a9a; }
-    #search-history { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .search-history-item { display: inline-block; padding: 4px 12px; background: #e8e8e0; border-radius: 12px; font-size: 13px; color: #555; cursor: pointer; }
-    .search-history-item:hover { background: #d0d0c8; }
-    .meta { color: #666; font-size: 0.9em; margin-bottom: 20px; }
-    .page-num { float: right; color: #999; font-size: 0.85em; }
-    blockquote { border-left: 3px solid #2c5f2d; margin: 1em 0; padding-left: 1em; color: #555; }
-    ul, ol { padding-left: 1.5em; }
-    hr { border: none; border-top: 1px solid #ddd; margin: 2em 0; }
-    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <nav>
-    <a href="/">首页</a>
-  </nav>
-  <div class="search-box">
-    <form id="search-form">
-      <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-      <button type="submit">搜索</button>
-    </form>
-    <div id="search-history"></div>
+<body${templateAttr}>
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：2004-03-17 14:32:07</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：${archiveId}</span>
+      <span class="system-status">状态：正常运行</span>
+    </div>
   </div>
-  ${pageNum ? `<div class="page-num">${pageNum}</div>` : ""}
-  <main>${contentHtml}</main>
-  <footer>
-    <p>白鹿疗养院病历数字化项目 | 内部资料</p>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title"><a href="/">白鹿疗养院病历数字化项目</a></h1>
+        <span class="site-subtitle">市医学会档案分会 · 内部资料 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">内部资料</div>
+      </div>
+    </div>
+  </header>
+  <nav class="site-nav">
+    <div class="container">
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/pages/archives">档案目录</a></li>
+        <li><a href="/pages/notice">访客须知</a></li>
+        <li><a href="/pages/about">关于本项目</a></li>
+      </ul>
+    </div>
+  </nav>
+  <div class="container">
+    <main>${options.bodyHtml}</main>
+  </div>
+  <footer class="site-footer">
+    <div class="container">
+      <p>${escapeHtml(footerText)}</p>
+      <p class="footer-page-num">本页编号：${archiveId}</p>
+    </div>
   </footer>
+  <div class="paper-grain"></div>
   <script type="module" src="/js/frontend.js"></script>
 </body>
 </html>`;
+}
+
+function buildMetaHtml(metadata: Record<string, string>, contentHtml: string): string {
+  const title = metadata.title || "档案说明";
+  const pageNum = metadata.page_num || "";
+  const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
+  const body = `<div class="doc-header">
+  <h1>${escapeHtml(title)}</h1>
+  <div class="doc-meta">
+    <span>病历数字化项目 · 内部检索系统</span>${pageNumHtml}
+  </div>
+</div>
+<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>
+${contentHtml}`;
+  return buildBaseWrapper({
+    title,
+    pageNum,
+    template: "meta",
+    bodyHtml: body,
+  });
+}
+
+function buildVolumeHtml(metadata: Record<string, string>, contentHtml: string): string {
+  const title = metadata.title || "病历卷宗";
+  const subtitle = metadata.subtitle || "";
+  const year = metadata.year || "";
+  const department = metadata.department || "";
+  const pageNum = metadata.page_num || "";
+  const volumeNo = metadata.volume_no || "";
+  const archiveId = volumeNo ? `BA-ARCH-VOL-${String(volumeNo).padStart(2, "0")}` : "BA-ARCH-VOL";
+
+  const metaItems: string[] = [];
+  if (volumeNo) metaItems.push(`<div><span class="label">卷号：</span>VOL-${escapeHtml(String(volumeNo).padStart(2, "0"))}</div>`);
+  if (year) metaItems.push(`<div><span class="label">时间范围：</span>${escapeHtml(year)}</div>`);
+  if (department) metaItems.push(`<div><span class="label">科室：</span>${escapeHtml(department)}</div>`);
+  if (subtitle) metaItems.push(`<div><span class="label">副标题：</span>${escapeHtml(subtitle)}</div>`);
+  if (pageNum) metaItems.push(`<div><span class="label">页码：</span>${escapeHtml(pageNum)}</div>`);
+
+  const metaBar = metaItems.length > 0
+    ? `<div class="volume-meta-bar">${metaItems.join("")}</div>`
+    : "";
+
+  const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
+  const body = `<div class="doc-header">
+  <h1>${escapeHtml(title)}</h1>
+  <div class="doc-meta">
+    <span>正编病历 · ${department ? escapeHtml(department) : "内部检索系统"}</span>${pageNumHtml}
+  </div>
+</div>
+<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>
+${metaBar}
+<div class="volume-content">
+${contentHtml}
+</div>`;
+
+  return buildBaseWrapper({
+    title,
+    pageNum,
+    template: "volume",
+    bodyHtml: body,
+    archiveId,
+  });
+}
+
+function buildSupplementHtml(metadata: Record<string, string>, contentHtml: string): string {
+  const title = metadata.title || "补遗档案";
+  const author = metadata.author || "";
+  const authorMeta = metadata.author_meta || "";
+  const years = metadata.years || "";
+  const pageNum = metadata.page_num || "";
+  const id = metadata.id || "";
+  const archiveId = id ? `BA-ARCH-SUP-${id.replace(/^supplement-/, "").toUpperCase()}` : "BA-ARCH-SUP";
+
+  const authorBlock = author
+    ? `<div class="supplement-author">
+  <div class="name">${escapeHtml(author)}</div>
+  <div class="meta">${escapeHtml([authorMeta, years].filter(Boolean).join(" · "))}</div>
+</div>`
+    : "";
+
+  const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
+  const body = `<div class="doc-header">
+  <h1>${escapeHtml(title)}</h1>
+  <div class="doc-meta">
+    <span>补遗档案 · 护理部</span>${pageNumHtml}
+  </div>
+</div>
+<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>
+${authorBlock}
+<div class="supplement-content">
+${contentHtml}
+</div>`;
+
+  return buildBaseWrapper({
+    title,
+    pageNum,
+    template: "supplement",
+    bodyHtml: body,
+    archiveId,
+  });
+}
+
+function buildPeripheralHtml(metadata: Record<string, string>, contentHtml: string): string {
+  const title = metadata.title || "外围档案";
+  const source = metadata.source || "";
+  const archiveId = metadata.archive_id || "";
+  const pageNum = metadata.page_num || "";
+  const displayArchiveId = archiveId || "BA-ARCH-PER";
+
+  const sourceBlock = source || archiveId
+    ? `<div class="peripheral-source">
+  ${archiveId ? `<div class="archive-id">${escapeHtml(archiveId)}</div>` : ""}
+  ${source ? `<div><span class="label">来源机构：</span>${escapeHtml(source)}</div>` : ""}
+</div>`
+    : "";
+
+  const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
+  const body = `<div class="doc-header">
+  <h1>${escapeHtml(title)}</h1>
+  <div class="doc-meta">
+    <span>外围档案 · ${source ? escapeHtml(source) : "外部机构"}</span>${pageNumHtml}
+  </div>
+</div>
+<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>
+${sourceBlock}
+<div class="peripheral-content">
+${contentHtml}
+</div>`;
+
+  return buildBaseWrapper({
+    title,
+    pageNum,
+    template: "peripheral",
+    bodyHtml: body,
+    archiveId: displayArchiveId,
+  });
+}
+
+function buildVariantHtml(metadata: Record<string, string>, contentHtml: string): string {
+  const baseTemplate = metadata.template || "volume";
+  const variantType = metadata.variant_type || "";
+  const variantOf = metadata.variant_of || "";
+
+  // Route to the base template builder, then annotate the body.
+  let baseHtml: string;
+  switch (baseTemplate) {
+    case "supplement":
+      baseHtml = buildSupplementHtml(metadata, contentHtml);
+      break;
+    case "peripheral":
+      baseHtml = buildPeripheralHtml(metadata, contentHtml);
+      break;
+    case "meta":
+      baseHtml = buildMetaHtml(metadata, contentHtml);
+      break;
+    case "volume":
+    default:
+      baseHtml = buildVolumeHtml(metadata, contentHtml);
+      break;
+  }
+
+  if (variantType) {
+    baseHtml = baseHtml.replace(
+      "<main>",
+      `<main data-variant="${escapeHtml(variantType)}" data-variant-of="${escapeHtml(variantOf)}">`
+    );
+  }
+  return baseHtml;
+}
+
+export function buildPageHtml(metadata: Record<string, string>, contentHtml: string): string {
+  if (metadata.category === "variant") {
+    return buildVariantHtml(metadata, contentHtml);
+  }
+  const template = metadata.template || "volume";
+  switch (template) {
+    case "meta":
+      return buildMetaHtml(metadata, contentHtml);
+    case "supplement":
+      return buildSupplementHtml(metadata, contentHtml);
+    case "peripheral":
+      return buildPeripheralHtml(metadata, contentHtml);
+    case "variant":
+      return buildVariantHtml(metadata, contentHtml);
+    case "volume":
+    default:
+      return buildVolumeHtml(metadata, contentHtml);
+  }
 }
 
 async function readVolumeList(): Promise<Array<{ num: string; title: string }>> {
@@ -135,65 +370,34 @@ export async function renderArchivesPage(): Promise<string> {
     })
     .join("\n");
 
-  return `<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>白鹿疗养院数字档案</title>
-  <style>
-    body { font-family: 'Noto Serif SC', 'SimSun', serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; background: #f5f5f0; color: #333; line-height: 1.8; }
-    h1 { color: #2c5f2d; border-bottom: 2px solid #2c5f2d; padding-bottom: 10px; font-size: 1.8em; }
-    h2 { color: #3a7a3c; margin-top: 2em; font-size: 1.4em; }
-    a { color: #2c5f2d; text-decoration: none; }
-    a:hover { color: #1e401f; }
-    nav { margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
-    nav a { margin-right: 15px; }
-    .search-box { margin: 20px 0; position: relative; }
-    #search-form { display: flex; gap: 10px; }
-    #search-input { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
-    button { padding: 10px 20px; background: #2c5f2d; color: white; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; }
-    button:hover { background: #1e401f; }
-    .search-feedback { margin-top: 10px; padding: 10px 14px; border-radius: 4px; font-size: 14px; animation: fadeIn 0.2s ease; }
-    .search-found { background: #e8f5e9; color: #2c5f2d; border: 1px solid #a5d6a7; }
-    .search-not-found { background: #ffebee; color: #8b0000; border: 1px solid #ef9a9a; }
-    #search-history { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .search-history-item { display: inline-block; padding: 4px 12px; background: #e8e8e0; border-radius: 12px; font-size: 13px; color: #555; cursor: pointer; }
-    .search-history-item:hover { background: #d0d0c8; }
-    .page-num { float: right; color: #999; font-size: 0.85em; }
-    .volume-list { margin-top: 40px; }
-    .volume-list a { display: block; padding: 10px 0; color: #2c5f2d; text-decoration: none; border-bottom: 1px solid #ddd; }
-    .volume-list a:hover { color: #1e401f; }
-    .volume-list .deleted { text-decoration: line-through; color: #999; }
-    .volume-list .pending { color: #999; font-size: 0.9em; }
-    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
-</head>
-<body>
-  <nav>
-    <a href="/">首页</a>
-  </nav>
-  <div class="search-box">
-    <form id="search-form">
-      <input type="text" id="search-input" placeholder="检索病历..." autocomplete="off" />
-      <button type="submit">搜索</button>
-    </form>
-    <div id="search-history"></div>
-  </div>
-  <div class="page-num">01/24</div>
+  const body = `<div class="doc-header">
   <h1>白鹿疗养院数字档案</h1>
-  <div class="volume-list">
-    <h2>档案卷宗</h2>
-${volumeLinks}
-    <a href="/pages/volume-00" class="pending">卷零 · 未命名（待整理）</a>
+  <div class="doc-meta">
+    <span>病历数字化项目 · 内部检索系统</span>
+    <span class="page-num">01/24</span>
   </div>
-  <footer>
-    <p>2023 年白鹿疗养院信息科 | 内部资料</p>
-  </footer>
-  <script type="module" src="/js/frontend.js"></script>
-</body>
-</html>`;
+</div>
+<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="检索病历..." autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>
+<div class="volume-list">
+  <h2>档案卷宗</h2>
+${volumeLinks}
+  <a href="/pages/volume-00" class="pending">卷零 · 未命名（待整理）</a>
+</div>`;
+
+  return buildBaseWrapper({
+    title: "白鹿疗养院数字档案",
+    pageNum: "01/24",
+    template: "meta",
+    bodyHtml: body,
+    footerText: "2023 年白鹿疗养院信息科 | 内部资料",
+  });
 }
 
 export async function renderPage(pageId: string): Promise<string> {
