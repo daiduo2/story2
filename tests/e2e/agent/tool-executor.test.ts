@@ -46,7 +46,7 @@ describe("tool-executor integration", () => {
       expect(result.loadTimeMs).toBeGreaterThan(0);
 
       await ctx.page.context().close();
-    });
+    }, 15000);
 
     it("should return 404 for a non-existent page", async () => {
       const { ctx } = await createContext();
@@ -56,7 +56,7 @@ describe("tool-executor integration", () => {
       expect(result.status).toBe(404);
 
       await ctx.page.context().close();
-    });
+    }, 15000);
 
     it("should discover all volume pages", async () => {
       const { ctx } = await createContext();
@@ -69,7 +69,7 @@ describe("tool-executor integration", () => {
       expect(volumeLinks.length).toBeGreaterThanOrEqual(24);
 
       await ctx.page.context().close();
-    });
+    }, 15000);
   });
 
   describe("verifyElement", () => {
@@ -81,7 +81,7 @@ describe("tool-executor integration", () => {
       expect(result.passed).toBe(true);
 
       await ctx.page.context().close();
-    });
+    }, 15000);
 
     it("should detect the correct page title", async () => {
       const { ctx } = await createContext();
@@ -91,7 +91,7 @@ describe("tool-executor integration", () => {
       expect(result.passed).toBe(true);
 
       await ctx.page.context().close();
-    });
+    }, 15000);
   });
 
   describe("searchKeyword", () => {

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>安保公司监控备份记录 | 白鹿疗养院病历数字化项目</title>
+  <link rel="stylesheet" href="/prototypes/css/prototype-retro.css">
+  <style>
+    .peripheral-source {
+      background: var(--note-bg);
+      border: 1px solid var(--border-color);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 0.95em;
+    }
+    .peripheral-source .archive-id {
+      font-family: "Courier New", "SimSun", monospace;
+      color: var(--accent-color);
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 6px;
+    }
+    .peripheral-source .source-meta {
+      color: var(--meta-color);
+      font-size: 0.9em;
+    }
+    .cctv-frame {
+      background: #0a0a0a;
+      border: 2px solid #333;
+      padding: 8px;
+      margin: 1.2em 0;
+      text-align: center;
+      color: #666;
+      font-family: "Courier New", "SimSun", monospace;
+    }
+    .cctv-placeholder {
+      background: #111;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #333;
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cctv-placeholder::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.03) 0px,
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+    }
+    .cctv-caption {
+      font-size: 0.85em;
+      color: #999;
+    }
+    main h2 {
+      font-family: "SimSun", "STSong", "Songti SC", serif;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.8em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+    main p {
+      text-indent: 2em;
+      margin: 0 0 0.8em 0;
+      text-align: justify;
+    }
+  </style>
+</head>
+<body data-template="peripheral">
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：2004-03-17 14:32:07</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：BA-ARCH-PER-01</span>
+      <span class="system-status">状态：正常运行</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title">白鹿疗养院病历数字化项目</h1>
+        <span class="site-subtitle">某市医学会档案分会 · 内部检索系统 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">内部资料</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <div class="container">
+      <a href="/">首页</a>
+      <a href="/pages/archives">档案目录</a>
+      <a href="/pages/notice">访客须知</a>
+      <a href="/pages/about">关于本项目</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <main>
+      <div class="doc-header">
+        <h1>安保公司监控备份记录</h1>
+        <div class="doc-meta">
+          <span>外围档案 · 市安保服务公司</span>
+          <span class="page-num" id="page-num">第 01 页 / 共 07 页</span>
+        </div>
+      </div>
+
+      <div class="peripheral-source">
+        <div class="archive-id">PER-01 / CCTV-BAILU-2002-2010</div>
+        <div class="source-meta">
+          来源机构：市安保服务公司 · 移交时间：2010-12-03 ·
+          存储介质：DVD-R 数据光盘 · 格式：AVI / 720×576
+        </div>
+      </div>
+
+      <h2>一、监控设备清单</h2>
+      <table class="archive-table">
+        <thead>
+          <tr>
+            <th>摄像头编号</th>
+            <th>位置</th>
+            <th>安装时间</th>
+            <th>覆盖时段</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">CAM-1F-01</td>
+            <td>1 楼大厅</td>
+            <td class="mono">2002-03</td>
+            <td class="mono">24h</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="mono">CAM-2F-02</td>
+            <td>2 楼护士站</td>
+            <td class="mono">2002-03</td>
+            <td class="mono">24h</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="mono">CAM-3F-03</td>
+            <td>3 楼走廊东端</td>
+            <td class="mono">2002-03</td>
+            <td class="mono">24h</td>
+            <td>2009-11 曾有 3 小时无信号</td>
+          </tr>
+          <tr>
+            <td class="mono">CAM-3F-04</td>
+            <td>3 楼楼梯间</td>
+            <td class="mono">2005-08</td>
+            <td class="mono">24h</td>
+            <td>2010-02 磁带损坏</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>二、异常片段记录</h2>
+      <p>以下片段由市安保服务公司技术人员在备份转存过程中标注为"信号异常"。原始 AVI 文件已按档案分会要求随本记录一并移交。</p>
+
+      <div class="cctv-frame">
+        <div class="cctv-placeholder">
+          [监控画面占位：CAM-3F-03 · 2009-11-14 02:47]
+        </div>
+        <div class="cctv-caption">
+          摄像头编号：CAM-3F-03 · 时间戳：2009-11-14 02:47:13 ·
+          状态：信号中断前 12 秒
+        </div>
+      </div>
+
+      <table class="archive-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>时间</th>
+            <th>摄像头</th>
+            <th>异常类型</th>
+            <th>处理结果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">2009-11-14</td>
+            <td class="mono">02:47</td>
+            <td class="mono">CAM-3F-03</td>
+            <td>画面出现人形轮廓后信号中断</td>
+            <td>设备检修，未查明原因</td>
+          </tr>
+          <tr>
+            <td class="mono">2010-02-22</td>
+            <td class="mono">02:47</td>
+            <td class="mono">CAM-3F-04</td>
+            <td>楼梯间灯光明灭三次</td>
+            <td>灯泡更换后正常</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>三、移交备注</h2>
+      <p>原始 DVD-R 光盘表面标注"白鹿疗养院 2002-2010"。其中 2009 年 11 月 14 日 02:47 前后片段存在约 3 分钟信号丢失，安保公司解释为设备老化导致。该时段内无人员进出记录。</p>
+
+      <hr style="border: none; border-top: 1px solid var(--border-color); margin: 2em 0;">
+      <p style="text-align: center; color: var(--meta-color); font-size: 0.9em;">【本页终】</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制</p>
+      <p>录入机构：某市医学会档案分会 · 最后更新：2004 年 3 月 15 日</p>
+      <p class="footer-page-num">本页编号：BA-ARCH-PER-001-01</p>
+    </div>
+  </footer>
+
+  <div class="paper-grain"></div>
+</body>
+</html>

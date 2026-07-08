@@ -115,7 +115,7 @@ function adaptEvent(frontend: FrontendGameEvent): AgentGameEvent {
   };
 }
 
-function adaptDecision(decision: {
+export function adaptDecision(decision: {
   routeDecision: { action: string; targetPage?: string; variantHint?: string };
   systemMessage?: { text: string; style: string };
   contentModules: Array<{
@@ -149,25 +149,41 @@ function adaptDecision(decision: {
     replace: "after",
   };
 
+  const action = actionMap[decision.routeDecision.action];
+  if (!action) {
+    throw new Error(`Invalid route action: "${decision.routeDecision.action}"`);
+  }
+
+  if (decision.systemMessage) {
+    const style = styleMap[decision.systemMessage.style];
+    if (!style) {
+      throw new Error(`Invalid message style: "${decision.systemMessage.style}"`);
+    }
+  }
+
   return {
     version: "narrative-v2",
     routeDecision: {
-      action: actionMap[decision.routeDecision.action] || "stay",
+      action,
       targetPage: decision.routeDecision.targetPage,
     },
     systemMessage: decision.systemMessage
       ? {
           text: decision.systemMessage.text,
-          style:
-            styleMap[decision.systemMessage.style] ||
-            decision.systemMessage.style,
+          style: styleMap[decision.systemMessage.style],
         }
       : undefined,
-    contentModules: decision.contentModules.map((m) => ({
-      moduleId: m.moduleId,
-      targetSelector: m.targetSelector,
-      position: positionMap[m.position] || m.position,
-    })),
+    contentModules: decision.contentModules.map((m) => {
+      const position = positionMap[m.position];
+      if (!position) {
+        throw new Error(`Invalid module position: "${m.position}"`);
+      }
+      return {
+        moduleId: m.moduleId,
+        targetSelector: m.targetSelector,
+        position,
+      };
+    }),
     memoryUpdate: {
       relationshipStage: decision.memoryUpdate.relationshipStage,
       understandingDepth: decision.memoryUpdate.understandingDepth,
@@ -258,12 +274,18 @@ async function startServer(): Promise<void> {
         res.end(JSON.stringify(adapted));
         logger.info("api.narrative.success", { sessionId: body.sessionId });
       } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         logger.error("api.narrative.failed", {
           sessionId: body.sessionId,
-          error: error instanceof Error ? error.message : String(error),
+          error: message,
         });
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Internal server error" }));
+        const isValidationError =
+          message.startsWith("Invalid") ||
+          message.includes("exceeds 3 sentences");
+        res.writeHead(isValidationError ? 400 : 500, {
+          "Content-Type": "application/json",
+        });
+        res.end(JSON.stringify({ error: message }));
       }
       return;
     }
@@ -300,7 +322,13 @@ async function startServer(): Promise<void> {
   });
 }
 
-startServer().catch((err) => {
-  console.error("[server] Failed to start:", err);
-  process.exit(1);
-});
+const isMainModule =
+  import.meta.url === new URL(process.argv[1] || "", "file://").href ||
+  process.argv[1]?.endsWith("server.js") === true;
+
+if (isMainModule) {
+  startServer().catch((err) => {
+    console.error("[server] Failed to start:", err);
+    process.exit(1);
+  });
+}

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卷一 · 入院登记志 | 白鹿疗养院病历数字化项目</title>
+  <link rel="stylesheet" href="/prototypes/css/prototype-retro.css">
+  <style>
+    .volume-meta-bar {
+      background: var(--note-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 0.9em;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 16px;
+    }
+    .volume-meta-bar .label {
+      font-family: "SimHei", "STHeiti", "Heiti SC", sans-serif;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+    .redacted {
+      background: #1a1a1a;
+      color: #1a1a1a;
+      padding: 0 2px;
+      cursor: help;
+    }
+    .redacted:hover {
+      background: transparent;
+      color: var(--text-color);
+    }
+    .archive-note {
+      background: var(--note-bg);
+      border-left: 3px solid var(--border-color);
+      padding: 10px 14px;
+      margin: 1.2em 0;
+      font-size: 0.9em;
+      color: var(--meta-color);
+    }
+    main h2 {
+      font-family: "SimSun", "STSong", "Songti SC", serif;
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-top: 1.8em;
+      margin-bottom: 0.8em;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+    }
+    main h3 {
+      font-family: "SimSun", "STSong", "Songti SC", serif;
+      font-size: 1.05em;
+      font-weight: bold;
+      margin-top: 1.4em;
+      margin-bottom: 0.6em;
+    }
+    main p {
+      text-indent: 2em;
+      margin: 0 0 0.8em 0;
+      text-align: justify;
+    }
+    main a {
+      color: var(--link-color);
+    }
+    main a:hover {
+      color: var(--link-hover);
+    }
+  </style>
+</head>
+<body data-template="volume">
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：2004-03-17 14:32:07</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：BA-ARCH-VOL-01</span>
+      <span class="system-status">状态：正常运行</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title">白鹿疗养院病历数字化项目</h1>
+        <span class="site-subtitle">某市医学会档案分会 · 内部检索系统 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">内部资料</div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav">
+    <div class="container">
+      <a href="/">首页</a>
+      <a href="/pages/archives">档案目录</a>
+      <a href="/pages/notice">访客须知</a>
+      <a href="/pages/about">关于本项目</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <main>
+      <div class="doc-header">
+        <h1>卷一 · 入院登记志</h1>
+        <div class="doc-meta">
+          <span>正编病历 · 入院登记处</span>
+          <span class="page-num" id="page-num">第 01 页 / 共 24 页</span>
+        </div>
+      </div>
+
+      <div class="volume-meta-bar">
+        <div><span class="label">卷号：</span>VOL-01</div>
+        <div><span class="label">年代：</span>1998–2003</div>
+        <div><span class="label">科室：</span>入院登记处</div>
+        <div><span class="label">录入员：</span>数字化一组</div>
+        <div><span class="label">录入时间：</span>2004-02-18</div>
+        <div><span class="label">OCR 状态：</span>已校对</div>
+      </div>
+
+      <h2>一、概述</h2>
+      <p>白鹿疗养院入院登记处负责新入院患者的信息采集、床位分配及初步健康评估。1998 年建院初期，月均入院约 8 人；至 2003 年，月均入院增至 22 人。登记流程包括身份核验、既往病史询问、家属联系人登记及楼层床位分配。本院建筑共 3 层，分别对应综合病区、内科病区及精神科病区。</p>
+
+      <h2>二、典型案例</h2>
+      <h3>病例 1</h3>
+      <p>患者编号：BA-001。姓名：陈德厚。年龄：67 岁。诊断：高血压 II 级。1998 年 4 月 12 日入院，登记时神志清醒，对答切题。分配至 2 楼内科病区 204 床。入院手续办理顺利，无异常记录。</p>
+
+      <h3>病例 2</h3>
+      <p>患者编号：BA-012。姓名：周美华。年龄：54 岁。诊断：2 型糖尿病。1999 年 8 月 3 日入院，由家属陪同。登记过程中配合良好，既往病史陈述清晰。分配至 2 楼 218 床。无异常。</p>
+
+      <h3>病例 3（标注）</h3>
+      <p>患者编号：BA-037。姓名：孙志远。年龄：71 岁。诊断：慢性阻塞性肺病。2000 年 11 月 17 日入院。登记时患者突然询问"4 楼还有床位吗"，登记人员答复本院仅 3 层，患者愣神片刻后表示"可能记错了"。标注：幻觉倾向，已安抚。分配至 1 楼 112 床。</p>
+
+      <h2>三、年度统计</h2>
+      <table class="archive-table">
+        <thead>
+          <tr>
+            <th>年份</th>
+            <th>入院人数</th>
+            <th>出院人数</th>
+            <th>在院人数</th>
+            <th>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">1998</td>
+            <td class="mono">62</td>
+            <td class="mono">48</td>
+            <td class="mono">14</td>
+            <td>建院首年</td>
+          </tr>
+          <tr>
+            <td class="mono">1999</td>
+            <td class="mono">78</td>
+            <td class="mono">61</td>
+            <td class="mono">31</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="mono">2000</td>
+            <td class="mono">95</td>
+            <td class="mono">79</td>
+            <td class="mono">47</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="mono">2001</td>
+            <td class="mono">112</td>
+            <td class="mono">98</td>
+            <td class="mono">61</td>
+            <td>含"幻觉"标注 3 例</td>
+          </tr>
+          <tr>
+            <td class="mono">2002</td>
+            <td class="mono">138</td>
+            <td class="mono">121</td>
+            <td class="mono">78</td>
+            <td>含"幻觉"标注 7 例</td>
+          </tr>
+          <tr>
+            <td class="mono">2003</td>
+            <td class="mono">156</td>
+            <td class="mono">142</td>
+            <td class="mono">92</td>
+            <td>含"幻觉"标注 12 例</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>四、特殊情况记录</h2>
+      <p>2001 年起，入院登记处陆续接到患者提及"4 楼"的陈述。所有此类记录均标注为"幻觉，已安抚"。登记处工作人员反映，部分患者在提及 4 楼时会同时提到"灯光"或"走廊很长"。截至 2003 年底，累计记录此类事件 22 例，涉及患者年龄 54–78 岁，无共同病史或家族关联。</p>
+
+      <div class="archive-note">
+        【档案分会批注】本卷第 3 例及同类记录已移交精神科评估组复核。患者姓名中部分信息已按隐私保护规定处理：孙<span class="redacted">志远</span>。
+      </div>
+
+      <hr style="border: none; border-top: 1px solid var(--border-color); margin: 2em 0;">
+      <p style="text-align: center; color: var(--meta-color); font-size: 0.9em;">【本卷终】</p>
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制</p>
+      <p>录入机构：某市医学会档案分会 · 最后更新：2004 年 3 月 15 日</p>
+      <p class="footer-page-num">本页编号：BA-ARCH-VOL-001-01</p>
+    </div>
+  </footer>
+
+  <div class="paper-grain"></div>
+
+  <script>
+    setTimeout(function() {
+      var pageNum = document.getElementById('page-num');
+      if (pageNum && Math.random() < 0.4) {
+        pageNum.textContent = '第 25 页 / 共 24 页';
+        pageNum.classList.add('glitch');
+        setTimeout(function() {
+          pageNum.textContent = '第 01 页 / 共 24 页';
+          pageNum.classList.remove('glitch');
+        }, 500);
+      }
+    }, 4000);
+  </script>
+</body>
+</html>

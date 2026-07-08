@@ -4,183 +4,136 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白鹿疗养院数字档案</title>
-  <style>
-    body {
-      font-family: 'Noto Serif SC', serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      background: #f5f5f0;
-      color: #333;
-      line-height: 1.8;
-    }
-    h1 {
-      color: #2c5f2d;
-      border-bottom: 2px solid #2c5f2d;
-      padding-bottom: 10px;
-    }
-    .search-box {
-      margin: 30px 0;
-      position: relative;
-    }
-    #search-input {
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-family: inherit;
-      box-sizing: border-box;
-    }
-    #search-form {
-      display: flex;
-      gap: 10px;
-    }
-    .search-feedback {
-      margin-top: 10px;
-      padding: 10px 14px;
-      border-radius: 4px;
-      font-size: 14px;
-      animation: fadeIn 0.2s ease;
-    }
-    .search-found {
-      background: #e8f5e9;
-      color: #2c5f2d;
-      border: 1px solid #a5d6a7;
-    }
-    .search-not-found {
-      background: #ffebee;
-      color: #8b0000;
-      border: 1px solid #ef9a9a;
-    }
-    #search-history {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .search-history-item {
-      display: inline-block;
-      padding: 4px 12px;
-      background: #e8e8e0;
-      border-radius: 12px;
-      font-size: 13px;
-      color: #555;
-      cursor: pointer;
-    }
-    .search-history-item:hover {
-      background: #d0d0c8;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    button {
-      padding: 12px 24px;
-      background: #2c5f2d;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    button:hover {
-      background: #1e401f;
-    }
-    .volume-list {
-      margin-top: 40px;
-    }
-    .volume-list a {
-      display: block;
-      padding: 10px 0;
-      color: #2c5f2d;
-      text-decoration: none;
-      border-bottom: 1px solid #ddd;
-    }
-    .volume-list a:hover {
-      color: #1e401f;
-    }
-    .volume-list h2 {
-      margin-top: 30px;
-      font-size: 1.1em;
-      color: #555;
-      border-bottom: 1px solid #ccc;
-      padding-bottom: 6px;
-    }
-    footer {
-      margin-top: 60px;
-      padding-top: 20px;
-      border-top: 1px solid #ddd;
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <h1>白鹿疗养院数字档案</h1>
-
-  <div class="search-box">
-    <form id="search-form">
-      <input
-        type="text"
-        id="search-input"
-        placeholder="搜索档案..."
-        autocomplete="off"
-      />
-      <button type="submit">搜索</button>
-    </form>
-    <div id="search-history"></div>
+<body data-template="meta">
+  <div class="system-bar">
+    <div class="container">
+      <span>系统时间：2004-03-17 14:32:07</span>
+      <span>当前用户：guest_researcher</span>
+      <span>档案编号：BA-ARCH-1998-2015</span>
+      <span class="system-status">状态：正常运行</span>
+    </div>
   </div>
 
-  <div class="volume-list">
-    <h2>正编病历</h2>
-    <a href="/pages/volume-01">卷一：入院登记志</a>
-    <a href="/pages/volume-02">卷二：内科病程志·上</a>
-    <a href="/pages/volume-03">卷三：内科病程志·下</a>
-    <a href="/pages/volume-04">卷四：精神科评估志</a>
-    <a href="/pages/volume-05">卷五：护理记录志</a>
-    <a href="/pages/volume-06">卷六：药房台账志</a>
-    <a href="/pages/volume-07">卷七：临终关怀志</a>
-    <a href="/pages/volume-08">卷八：建筑维护志</a>
-    <a href="/pages/volume-09">卷九：膳食供应志</a>
-    <a href="/pages/volume-10">卷十：安全检查志</a>
-    <a href="/pages/volume-11">卷十一：财务收支志</a>
-    <a href="/pages/volume-12">卷十二：人员任免志</a>
-    <a href="/pages/volume-13">卷十三：设备采购志</a>
-    <a href="/pages/volume-14">卷十四：感染控制志</a>
-    <a href="/pages/volume-15">卷十五：康复训练志</a>
-    <a href="/pages/volume-16">卷十六：会诊记录志</a>
-    <a href="/pages/volume-17">卷十七：家属访谈志</a>
-    <a href="/pages/volume-18">卷十八：特殊病例志·上</a>
-    <a href="/pages/volume-19">卷十九：特殊病例志·下</a>
-    <a href="/pages/volume-20">卷二十：事故调查志·上</a>
-    <a href="/pages/volume-21">卷二十一：事故调查志·下</a>
-    <a href="/pages/volume-22">卷二十二：未归档记录志</a>
-    <a href="/pages/volume-23">卷二十三：异闻录·上</a>
-    <a href="/pages/volume-24">卷二十四：异闻录·下</a>
+  <header class="site-header">
+    <div class="container">
+      <div class="header-left">
+        <h1 class="site-title"><a href="/">白鹿疗养院病历数字化项目</a></h1>
+        <span class="site-subtitle">市医学会档案分会 · 内部资料 · 仅供医学研究</span>
+      </div>
+      <div class="header-right">
+        <div class="stamp">内部资料</div>
+      </div>
+    </div>
+  </header>
 
-    <h2>补遗档案</h2>
-    <a href="/pages/supplement-lin">林素琴护士长的值班日志</a>
+  <nav class="site-nav">
+    <div class="container">
+      <ul>
+        <li><a href="/" class="active">首页</a></li>
+        <li><a href="/pages/archives">档案目录</a></li>
+        <li><a href="/pages/notice">访客须知</a></li>
+        <li><a href="/pages/about">关于本项目</a></li>
+      </ul>
+    </div>
+  </nav>
 
-    <h2>外围档案</h2>
-    <a href="/pages/ambulance-log">市急救中心出车记录</a>
-    <a href="/pages/cleaning-log">保洁公司清洁服务记录</a>
-    <a href="/pages/food-supply">餐饮供应商配送单汇总</a>
-    <a href="/pages/morgue-transfer">市殡仪馆遗体交接记录</a>
-    <a href="/pages/pharmacy-log">市第三人民医院药房发药记录</a>
-    <a href="/pages/power-outage">市供电所停电记录</a>
-    <a href="/pages/security-cctv">安保公司监控备份记录</a>
+  <div class="container">
+    <main>
+      <div class="doc-header">
+        <h1>白鹿疗养院数字档案</h1>
+        <div class="doc-meta">
+          <span>病历数字化项目 · 内部检索系统</span>
+        </div>
+      </div>
 
-    <h2>档案说明</h2>
-    <a href="/pages/about">关于本项目</a>
-    <a href="/pages/archives">档案目录</a>
-    <a href="/pages/notice">访客须知</a>
+      <div class="search-panel">
+        <label for="search-input">全文检索：</label>
+        <form id="search-form">
+          <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+          <button type="submit">检索</button>
+          <button type="button" class="btn-secondary">高级检索</button>
+        </form>
+      </div>
+
+      <div id="search-history"></div>
+
+      <div class="home-intro">
+        <p>欢迎使用白鹿疗养院病历数字化检索系统。本项目由某市医学会档案分会发起，对白鹿疗养院 1998–2015 年间的病历、护理记录、药房台账等历史档案进行数字化整理，供医学研究者内部查阅。</p>
+        <p>目前馆藏正编病历 24 卷、补遗档案 1 册、外围档案 7 类。所有文献均经过 OCR 识别并建立全文索引，部分早期扫描件可能存在识别误差。</p>
+      </div>
+
+      <section class="home-section">
+        <h2>正编病历</h2>
+        <div class="volume-list">
+          <a href="/pages/volume-01">卷一：入院登记志</a>
+          <a href="/pages/volume-02">卷二：内科病程志·上</a>
+          <a href="/pages/volume-03">卷三：内科病程志·下</a>
+          <a href="/pages/volume-04">卷四：精神科评估志</a>
+          <a href="/pages/volume-05">卷五：护理记录志</a>
+          <a href="/pages/volume-06">卷六：药房台账志</a>
+          <a href="/pages/volume-07">卷七：临终关怀志</a>
+          <a href="/pages/volume-08">卷八：建筑维护志</a>
+          <a href="/pages/volume-09">卷九：膳食供应志</a>
+          <a href="/pages/volume-10">卷十：安全检查志</a>
+          <a href="/pages/volume-11">卷十一：财务收支志</a>
+          <a href="/pages/volume-12">卷十二：人员任免志</a>
+          <a href="/pages/volume-13">卷十三：设备采购志</a>
+          <a href="/pages/volume-14">卷十四：感染控制志</a>
+          <a href="/pages/volume-15">卷十五：康复训练志</a>
+          <a href="/pages/volume-16">卷十六：会诊记录志</a>
+          <a href="/pages/volume-17">卷十七：家属访谈志</a>
+          <a href="/pages/volume-18">卷十八：特殊病例志·上</a>
+          <a href="/pages/volume-19">卷十九：特殊病例志·下</a>
+          <a href="/pages/volume-20">卷二十：事故调查志·上</a>
+          <a href="/pages/volume-21">卷二十一：事故调查志·下</a>
+          <a href="/pages/volume-22">卷二十二：未归档记录志</a>
+          <a href="/pages/volume-23">卷二十三：异闻录·上</a>
+          <a href="/pages/volume-24">卷二十四：异闻录·下</a>
+        </div>
+      </section>
+
+      <section class="home-section">
+        <h2>补遗档案</h2>
+        <div class="volume-list">
+          <a href="/pages/supplement-lin">林素琴护士长的值班日志</a>
+        </div>
+      </section>
+
+      <section class="home-section">
+        <h2>外围档案</h2>
+        <div class="volume-list">
+          <a href="/pages/ambulance-log">市急救中心出车记录</a>
+          <a href="/pages/cleaning-log">保洁公司清洁服务记录</a>
+          <a href="/pages/food-supply">餐饮供应商配送单汇总</a>
+          <a href="/pages/morgue-transfer">市殡仪馆遗体交接记录</a>
+          <a href="/pages/pharmacy-log">市第三人民医院药房发药记录</a>
+          <a href="/pages/power-outage">市供电所停电记录</a>
+          <a href="/pages/security-cctv">安保公司监控备份记录</a>
+        </div>
+      </section>
+
+      <section class="home-section">
+        <h2>档案说明</h2>
+        <div class="volume-list">
+          <a href="/pages/about">关于本项目</a>
+          <a href="/pages/archives">档案目录</a>
+          <a href="/pages/notice">访客须知</a>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <footer>
-    <p>白鹿疗养院病历数字化项目 | 内部资料</p>
+  <footer class="site-footer">
+    <div class="container">
+      <p>白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制</p>
+      <p>最后更新：2024 年 3 月 · 市医学会档案分会</p>
+      <p class="footer-page-num">本页编号：BA-ARCH-HOME-001</p>
+    </div>
   </footer>
 
-  <script type="module" src="js/frontend.js"></script>
+  <div class="paper-grain"></div>
+  <script type="module" src="/js/frontend.js"></script>
 </body>
 </html>

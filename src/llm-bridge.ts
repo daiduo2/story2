@@ -1,6 +1,6 @@
 import type { GameEvent, NarrativeDecision, PlayerSignature } from './types'
 
-const API_URL = 'http://localhost:3724/api/narrative'
+const API_URL = '/api/narrative'
 
 export interface BaiLuLLMAPI {
   evaluate: (event: GameEvent) => Promise<NarrativeDecision | null>

@@ -61,7 +61,7 @@ describe('llm-bridge', () => {
       const result = await window.BaiLuLLM!.evaluate(event)
 
       expect(fetch).toHaveBeenCalledWith(
-        'http://localhost:3724/api/narrative',
+        '/api/narrative',
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
