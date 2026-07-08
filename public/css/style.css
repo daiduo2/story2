@@ -164,6 +164,11 @@ body {
 
 .meta-panel li { margin-bottom: 6px; }
 
+.meta-panel .label {
+  font-family: var(--font-sans);
+  font-weight: bold;
+}
+
 /* 纸张纹理 */
 .paper-grain {
   position: fixed;

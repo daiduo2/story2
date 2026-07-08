@@ -267,10 +267,53 @@ function buildPeripheralSidebar(metadata: Record<string, string>): string {
   return panels ? `<aside class="sidebar sidebar--sticky">\n    ${panels}\n  </aside>` : "";
 }
 
+function buildMetaSidebar(metadata: Record<string, string>): string {
+  const title = metadata.title || "";
+  const pageNum = metadata.page_num || "";
+
+  const relatedLinks = title.includes("须知")
+    ? `<li><a href="/pages/about">关于本项目</a></li>`
+    : title.includes("关于")
+      ? `<li><a href="/pages/notice">访客须知</a></li>`
+      : `<li><a href="/pages/notice">访客须知</a></li>\n        <li><a href="/pages/about">关于本项目</a></li>`;
+
+  const infoPanel = `<div class="meta-panel">
+      <h3>本页信息</h3>
+      <ul>
+        ${pageNum ? `<li><span class="label">页码：</span>${escapeHtml(pageNum)}</li>` : ""}
+        <li><span class="label">类型：</span>系统说明</li>
+      </ul>
+    </div>`;
+
+  const linksPanel = `<div class="meta-panel">
+      <h3>快速链接</h3>
+      <ul>
+        <li><a href="/">返回首页</a></li>
+        <li><a href="/pages/archives">完整档案目录</a></li>
+        ${relatedLinks}
+      </ul>
+    </div>`;
+
+  const noticePanel = `<div class="meta-panel">
+      <h3>系统公告</h3>
+      <ul>
+        <li>本系统仅限授权医学研究人员使用。</li>
+        <li>部分早期扫描件存在 OCR 识别误差。</li>
+      </ul>
+    </div>`;
+
+  return `<aside class="sidebar sidebar--sticky">
+    ${infoPanel}
+    ${linksPanel}
+    ${noticePanel}
+  </aside>`;
+}
+
 function buildMetaHtml(metadata: Record<string, string>, contentHtml: string): string {
   const title = metadata.title || "档案说明";
   const pageNum = metadata.page_num || "";
   const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
+  const sidebarRight = buildMetaSidebar(metadata);
   const body = `<div class="doc-header">
   <h1>${escapeHtml(title)}</h1>
   <div class="doc-meta">
@@ -286,6 +329,8 @@ ${contentHtml}
     pageNum,
     template: "meta",
     bodyHtml: body,
+    layoutClass: "page-layout--with-right-sidebar",
+    sidebarRight,
   });
 }
 
@@ -564,11 +609,33 @@ ${volumeRows}
   </table>
 </section>`;
 
+  const sidebarRight = `<aside class="sidebar sidebar--sticky">
+    <div class="meta-panel">
+      <h3>馆藏统计</h3>
+      <ul>
+        <li>正编病历：<strong class="mono">24</strong> 卷</li>
+        <li>补遗档案：<strong class="mono">1</strong> 册</li>
+        <li>外围档案：<strong class="mono">7</strong> 类</li>
+        <li>未归档：<strong class="mono">1</strong> 项</li>
+      </ul>
+    </div>
+    <div class="meta-panel">
+      <h3>快速链接</h3>
+      <ul>
+        <li><a href="/">返回首页</a></li>
+        <li><a href="/pages/notice">访客须知</a></li>
+        <li><a href="/pages/about">关于本项目</a></li>
+      </ul>
+    </div>
+  </aside>`;
+
   return buildBaseWrapper({
     title: "白鹿疗养院数字档案",
     pageNum: "01/24",
     template: "meta",
     bodyHtml: body,
+    layoutClass: "page-layout--with-right-sidebar",
+    sidebarRight,
     footerText: "2023 年白鹿疗养院信息科 | 内部资料",
   });
 }
