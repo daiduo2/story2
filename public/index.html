@@ -40,89 +40,176 @@
   </nav>
 
   <div class="container">
-    <main>
-      <div class="doc-header">
-        <h1>白鹿疗养院数字档案</h1>
-        <div class="doc-meta">
-          <span>病历数字化项目 · 内部检索系统</span>
+    <div class="page-layout page-layout--home">
+      <aside class="sidebar sidebar--sticky">
+        <nav class="sidebar-nav" aria-label="档案分类">
+          <h3>档案分类</h3>
+          <ul>
+            <li class="sidebar-nav__group">
+              <span class="sidebar-nav__label">正编病历</span>
+              <ul>
+                <li><a href="/pages/volume-01">卷一：入院登记志</a></li>
+                <li><a href="/pages/volume-02">卷二：内科病程志·上</a></li>
+                <li><a href="/pages/volume-03">卷三：内科病程志·下</a></li>
+                <li><a href="/pages/volume-04">卷四：精神科评估志</a></li>
+                <li><a href="/pages/volume-05">卷五：护理记录志</a></li>
+                <li><a href="/pages/volume-06">卷六：药房台账志</a></li>
+              </ul>
+              <p class="more-link"><a href="/pages/archives">全部 24 卷 →</a></p>
+            </li>
+            <li class="sidebar-nav__group">
+              <span class="sidebar-nav__label">补遗档案</span>
+              <ul>
+                <li><a href="/pages/supplement-lin">林素琴护士长的值班日志</a></li>
+              </ul>
+            </li>
+            <li class="sidebar-nav__group">
+              <span class="sidebar-nav__label">外围档案</span>
+              <ul>
+                <li><a href="/pages/security-cctv">安保监控备份</a></li>
+                <li><a href="/pages/pharmacy-log">药房发药记录</a></li>
+                <li><a href="/pages/power-outage">供电所停电记录</a></li>
+              </ul>
+              <p class="more-link"><a href="/pages/archives">全部 7 类 →</a></p>
+            </li>
+            <li class="sidebar-nav__group">
+              <span class="sidebar-nav__label">系统说明</span>
+              <ul>
+                <li><a href="/pages/about">关于本项目</a></li>
+                <li><a href="/pages/notice">访客须知</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main>
+        <div class="doc-header">
+          <h1>白鹿疗养院数字档案</h1>
+          <div class="doc-meta">
+            <span>病历数字化项目 · 内部检索系统</span>
+          </div>
         </div>
-      </div>
 
-      <div class="search-panel">
-        <label for="search-input">全文检索：</label>
-        <form id="search-form">
-          <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-          <button type="submit">检索</button>
-          <button type="button" class="btn-secondary">高级检索</button>
-        </form>
-      </div>
-
-      <div id="search-history"></div>
-
-      <div class="home-intro">
-        <p>欢迎使用白鹿疗养院病历数字化检索系统。本项目由某市医学会档案分会发起，对白鹿疗养院 1998–2015 年间的病历、护理记录、药房台账等历史档案进行数字化整理，供医学研究者内部查阅。</p>
-        <p>目前馆藏正编病历 24 卷、补遗档案 1 册、外围档案 7 类。所有文献均经过 OCR 识别并建立全文索引，部分早期扫描件可能存在识别误差。</p>
-      </div>
-
-      <section class="home-section">
-        <h2>正编病历</h2>
-        <div class="volume-list">
-          <a href="/pages/volume-01">卷一：入院登记志</a>
-          <a href="/pages/volume-02">卷二：内科病程志·上</a>
-          <a href="/pages/volume-03">卷三：内科病程志·下</a>
-          <a href="/pages/volume-04">卷四：精神科评估志</a>
-          <a href="/pages/volume-05">卷五：护理记录志</a>
-          <a href="/pages/volume-06">卷六：药房台账志</a>
-          <a href="/pages/volume-07">卷七：临终关怀志</a>
-          <a href="/pages/volume-08">卷八：建筑维护志</a>
-          <a href="/pages/volume-09">卷九：膳食供应志</a>
-          <a href="/pages/volume-10">卷十：安全检查志</a>
-          <a href="/pages/volume-11">卷十一：财务收支志</a>
-          <a href="/pages/volume-12">卷十二：人员任免志</a>
-          <a href="/pages/volume-13">卷十三：设备采购志</a>
-          <a href="/pages/volume-14">卷十四：感染控制志</a>
-          <a href="/pages/volume-15">卷十五：康复训练志</a>
-          <a href="/pages/volume-16">卷十六：会诊记录志</a>
-          <a href="/pages/volume-17">卷十七：家属访谈志</a>
-          <a href="/pages/volume-18">卷十八：特殊病例志·上</a>
-          <a href="/pages/volume-19">卷十九：特殊病例志·下</a>
-          <a href="/pages/volume-20">卷二十：事故调查志·上</a>
-          <a href="/pages/volume-21">卷二十一：事故调查志·下</a>
-          <a href="/pages/volume-22">卷二十二：未归档记录志</a>
-          <a href="/pages/volume-23">卷二十三：异闻录·上</a>
-          <a href="/pages/volume-24">卷二十四：异闻录·下</a>
+        <div class="search-panel">
+          <label for="search-input">全文检索：</label>
+          <form id="search-form">
+            <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
+            <button type="submit">检索</button>
+            <button type="button" class="btn-secondary">高级检索</button>
+          </form>
         </div>
-      </section>
 
-      <section class="home-section">
-        <h2>补遗档案</h2>
-        <div class="volume-list">
-          <a href="/pages/supplement-lin">林素琴护士长的值班日志</a>
-        </div>
-      </section>
+        <div id="search-history"></div>
 
-      <section class="home-section">
-        <h2>外围档案</h2>
-        <div class="volume-list">
-          <a href="/pages/ambulance-log">市急救中心出车记录</a>
-          <a href="/pages/cleaning-log">保洁公司清洁服务记录</a>
-          <a href="/pages/food-supply">餐饮供应商配送单汇总</a>
-          <a href="/pages/morgue-transfer">市殡仪馆遗体交接记录</a>
-          <a href="/pages/pharmacy-log">市第三人民医院药房发药记录</a>
-          <a href="/pages/power-outage">市供电所停电记录</a>
-          <a href="/pages/security-cctv">安保公司监控备份记录</a>
+        <div class="home-intro">
+          <p>欢迎使用白鹿疗养院病历数字化检索系统。本项目由某市医学会档案分会发起，对白鹿疗养院 1998–2015 年间的病历、护理记录、药房台账等历史档案进行数字化整理，供医学研究者内部查阅。</p>
+          <p>目前馆藏正编病历 24 卷、补遗档案 1 册、外围档案 7 类。所有文献均经过 OCR 识别并建立全文索引，部分早期扫描件可能存在识别误差。</p>
         </div>
-      </section>
 
-      <section class="home-section">
-        <h2>档案说明</h2>
-        <div class="volume-list">
-          <a href="/pages/about">关于本项目</a>
-          <a href="/pages/archives">档案目录</a>
-          <a href="/pages/notice">访客须知</a>
+        <section class="home-section">
+          <h2>正编病历</h2>
+          <table class="archive-table">
+            <thead>
+              <tr>
+                <th>卷号</th>
+                <th>题名</th>
+                <th>年代</th>
+                <th>科室</th>
+                <th>状态</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono">VOL-01</td><td><a href="/pages/volume-01">卷一：入院登记志</a></td><td class="mono">1998–2003</td><td>入院登记处</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-02</td><td><a href="/pages/volume-02">卷二：内科病程志·上</a></td><td class="mono">1999–2004</td><td>内科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-03</td><td><a href="/pages/volume-03">卷三：内科病程志·下</a></td><td class="mono">1999–2004</td><td>内科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-04</td><td><a href="/pages/volume-04">卷四：精神科评估志</a></td><td class="mono">2000–2005</td><td>精神科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-05</td><td><a href="/pages/volume-05">卷五：护理记录志</a></td><td class="mono">1998–2010</td><td>护理部</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-06</td><td><a href="/pages/volume-06">卷六：药房台账志</a></td><td class="mono">1998–2010</td><td>药房</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-07</td><td><a href="/pages/volume-07">卷七：临终关怀志</a></td><td class="mono">1998–2005</td><td>临终关怀科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-08</td><td><a href="/pages/volume-08">卷八：建筑维护志</a></td><td class="mono">1998–2010</td><td>后勤科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-09</td><td><a href="/pages/volume-09">卷九：膳食供应志</a></td><td class="mono">1998–2010</td><td>膳食科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-10</td><td><a href="/pages/volume-10">卷十：安全检查志</a></td><td class="mono">1998–2010</td><td>安保科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-11</td><td><a href="/pages/volume-11">卷十一：财务收支志</a></td><td class="mono">1998–2010</td><td>财务科</td><td>已数字化</td></tr>
+              <tr><td class="mono">VOL-12</td><td><a href="/pages/volume-12">卷十二：人员任免志</a></td><td class="mono">1998–2010</td><td>人事科</td><td>已数字化</td></tr>
+            </tbody>
+          </table>
+          <p class="more-link"><a href="/pages/archives">查看全部 24 卷 →</a></p>
+        </section>
+
+        <section class="home-section">
+          <h2>补遗档案</h2>
+          <table class="archive-table">
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>题名</th>
+                <th>作者/来源</th>
+                <th>年代</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">SUP-01</td>
+                <td><a href="/pages/supplement-lin">林素琴护士长的值班日志</a></td>
+                <td>林素琴</td>
+                <td class="mono">2005–2010</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="home-section">
+          <h2>外围档案</h2>
+          <table class="archive-table">
+            <thead>
+              <tr>
+                <th>编号</th>
+                <th>题名</th>
+                <th>来源机构</th>
+                <th>年代</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono">PER-01</td><td><a href="/pages/security-cctv">安保公司监控备份记录</a></td><td>市安保服务公司</td><td class="mono">2002–2010</td></tr>
+              <tr><td class="mono">PER-02</td><td><a href="/pages/pharmacy-log">市第三人民医院药房发药记录</a></td><td>市第三人民医院</td><td class="mono">2005–2010</td></tr>
+              <tr><td class="mono">PER-03</td><td><a href="/pages/power-outage">市供电所停电记录</a></td><td>市供电所</td><td class="mono">1999–2010</td></tr>
+            </tbody>
+          </table>
+          <p class="more-link"><a href="/pages/archives">查看全部 7 类 →</a></p>
+        </section>
+      </main>
+
+      <aside class="sidebar sidebar--sticky">
+        <div class="meta-panel">
+          <h3>系统公告</h3>
+          <ul>
+            <li>本系统仅限授权医学研究人员使用。</li>
+            <li>部分早期扫描件存在 OCR 识别误差，请以原件为准。</li>
+            <li>如发现档案页码、编号异常，请联系档案分会数字化一组。</li>
+          </ul>
         </div>
-      </section>
-    </main>
+
+        <div class="meta-panel">
+          <h3>馆藏统计</h3>
+          <ul>
+            <li>正编病历：<strong class="mono">24</strong> 卷</li>
+            <li>补遗档案：<strong class="mono">1</strong> 册</li>
+            <li>外围档案：<strong class="mono">7</strong> 类</li>
+            <li>未归档：<strong class="mono">1</strong> 项</li>
+          </ul>
+        </div>
+
+        <div class="meta-panel">
+          <h3>快速链接</h3>
+          <ul>
+            <li><a href="/pages/notice">访客须知</a></li>
+            <li><a href="/pages/about">关于本项目</a></li>
+            <li><a href="/pages/archives">完整档案目录</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
   </div>
 
   <footer class="site-footer">

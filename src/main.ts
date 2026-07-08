@@ -25,6 +25,8 @@ function maybeInjectSearch() {
   const term = ANOMALY_SEARCH_TERMS[Math.floor(Math.random() * ANOMALY_SEARCH_TERMS.length)]
   searchInput.setAttribute('placeholder', term)
   searchInput.dataset.injected = term
+  searchInput.classList.add('glitch')
+  window.setTimeout(() => searchInput.classList.remove('glitch'), 350)
   window.BaiLuBehavior?.recordAnomaly('anom-search-inject')
 }
 
@@ -67,6 +69,57 @@ function initRule3Detection() {
   }, true)
 }
 
+// === TOC Highlight ===
+
+function initTocHighlight() {
+  if (typeof IntersectionObserver === 'undefined') return
+
+  const tocLinks = document.querySelectorAll('.toc a[href^="#"]')
+  if (tocLinks.length === 0) return
+
+  const headings = Array.from(tocLinks)
+    .map((link) => {
+      const id = link.getAttribute('href')?.slice(1)
+      return id ? document.getElementById(id) : null
+    })
+    .filter((el): el is HTMLElement => el !== null)
+
+  if (headings.length === 0) return
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id
+          tocLinks.forEach((link) => {
+            link.classList.toggle('is-active', link.getAttribute('href') === `#${id}`)
+          })
+        }
+      })
+    },
+    { rootMargin: '-10% 0px -70% 0px', threshold: 0 }
+  )
+
+  headings.forEach((heading) => observer.observe(heading))
+}
+
+// === Variant Page Effects ===
+
+function initVariantEffects() {
+  const main = document.querySelector('main[data-variant]')
+  if (!main) return
+
+  const variant = main.getAttribute('data-variant')
+  if (variant) {
+    document.body.setAttribute('data-variant', variant)
+  }
+
+  const pageNum = document.querySelector('.page-num')
+  if (pageNum && Math.random() < 0.4) {
+    pageNum.classList.add('glitch')
+  }
+}
+
 // === Public API ===
 
 export function initMain() {
@@ -74,6 +127,8 @@ export function initMain() {
   checkRule1()
   maybeInjectSearch()
   initRule3Detection()
+  initTocHighlight()
+  initVariantEffects()
 
   document.addEventListener('copy', handleCopyWithShift)
   checkPageTimeout()

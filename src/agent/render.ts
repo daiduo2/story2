@@ -42,6 +42,9 @@ interface WrapperOptions {
   bodyHtml: string;
   footerText?: string;
   archiveId?: string;
+  layoutClass?: string;
+  sidebarLeft?: string;
+  sidebarRight?: string;
 }
 
 function buildBaseWrapper(options: WrapperOptions): string {
@@ -50,6 +53,9 @@ function buildBaseWrapper(options: WrapperOptions): string {
   const templateAttr = options.template ? ` data-template="${escapeHtml(options.template)}"` : "";
   const footerText = options.footerText || "白鹿疗养院病历数字化项目 | 内部资料 | 未经批准不得复制";
   const archiveId = escapeHtml(options.archiveId || "BA-ARCH-1998-2015");
+  const layoutClass = options.layoutClass ? ` ${options.layoutClass}` : "";
+  const sidebarLeft = options.sidebarLeft || "";
+  const sidebarRight = options.sidebarRight || "";
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -90,7 +96,11 @@ function buildBaseWrapper(options: WrapperOptions): string {
     </div>
   </nav>
   <div class="container">
-    <main>${options.bodyHtml}</main>
+    <div class="page-layout${layoutClass}">
+      ${sidebarLeft}
+      <main>${options.bodyHtml}</main>
+      ${sidebarRight}
+    </div>
   </div>
   <footer class="site-footer">
     <div class="container">
@@ -104,6 +114,159 @@ function buildBaseWrapper(options: WrapperOptions): string {
 </html>`;
 }
 
+function buildSearchPanel(placeholder = "搜索档案..."): string {
+  return `<div class="search-panel">
+  <label for="search-input">全文检索：</label>
+  <form id="search-form">
+    <input type="text" id="search-input" placeholder="${escapeHtml(placeholder)}" autocomplete="off" />
+    <button type="submit">检索</button>
+    <button type="button" class="btn-secondary">高级检索</button>
+  </form>
+</div>`;
+}
+
+function extractToc(contentHtml: string): string {
+  const headings: Array<{ level: number; text: string; id: string }> = [];
+  const headingRegex = /<h([23])[^>]*>(.*?)<\/h\1>/gi;
+  let match;
+  while ((match = headingRegex.exec(contentHtml)) !== null) {
+    const level = parseInt(match[1], 10);
+    const rawText = match[2].replace(/<[^>]+>/g, "");
+    const id = `toc-${headings.length + 1}`;
+    headings.push({ level, text: rawText, id });
+  }
+
+  if (headings.length === 0) {
+    return "";
+  }
+
+  const items = headings
+    .map((h) => `        <li class="toc-level-${h.level}"><a href="#${h.id}">${escapeHtml(h.text)}</a></li>`)
+    .join("\n");
+
+  return `<nav class="toc" aria-label="页面目录">
+      <h3>本页目录</h3>
+      <ul>
+${items}
+      </ul>
+    </nav>`;
+}
+
+function injectHeadingIds(contentHtml: string): string {
+  let index = 0;
+  return contentHtml.replace(/<h([23])([^>]*)>/gi, (match, level, attrs) => {
+    index += 1;
+    const id = `toc-${index}`;
+    if (attrs.includes("id=")) {
+      return match;
+    }
+    return `<h${level}${attrs} id="${id}">`;
+  });
+}
+
+function buildVolumeSidebar(metadata: Record<string, string>, contentHtml: string): string {
+  const volumeNo = metadata.volume_no ? parseInt(metadata.volume_no, 10) : 0;
+  const toc = extractToc(contentHtml);
+
+  const prevLink = volumeNo > 1
+    ? `<li><a href="/pages/volume-${String(volumeNo - 1).padStart(2, "0")}">上一卷</a></li>`
+    : "";
+  const nextLink = volumeNo > 0 && volumeNo < 24
+    ? `<li><a href="/pages/volume-${String(volumeNo + 1).padStart(2, "0")}">下一卷</a></li>`
+    : "";
+
+  const relatedVolumes: string[] = [];
+  if (metadata.title?.includes("特殊病例")) {
+    relatedVolumes.push(`<li><a href="/pages/supplement-lin">林素琴护士长的值班日志</a></li>`);
+  }
+  if (metadata.title?.includes("事故调查")) {
+    relatedVolumes.push(`<li><a href="/pages/security-cctv">安保公司监控备份记录</a></li>`);
+  }
+  if (metadata.title?.includes("精神科")) {
+    relatedVolumes.push(`<li><a href="/pages/volume-04">卷四：精神科评估志</a></li>`);
+  }
+
+  const navItems = [prevLink, nextLink].filter(Boolean).join("\n        ");
+  const relatedItems = relatedVolumes.join("\n        ");
+
+  const tocPanel = toc
+    ? `<div class="meta-panel">
+      ${toc}
+    </div>`
+    : "";
+
+  const navPanel = navItems
+    ? `<div class="meta-panel">
+      <h3>卷宗导航</h3>
+      <ul>
+        ${navItems}
+      </ul>
+    </div>`
+    : "";
+
+  const relatedPanel = relatedItems
+    ? `<div class="meta-panel">
+      <h3>相关档案</h3>
+      <ul>
+        ${relatedItems}
+      </ul>
+    </div>`
+    : "";
+
+  const panels = [tocPanel, navPanel, relatedPanel].filter(Boolean).join("\n    ");
+  return panels ? `<aside class="sidebar sidebar--sticky">\n    ${panels}\n  </aside>` : "";
+}
+
+function buildSupplementSidebar(metadata: Record<string, string>, contentHtml: string): string {
+  const author = metadata.author || "";
+  const authorMeta = metadata.author_meta || "";
+  const years = metadata.years || "";
+  const toc = extractToc(contentHtml);
+
+  const authorPanel = author
+    ? `<div class="meta-panel">
+      <h3>作者信息</h3>
+      <p><strong>${escapeHtml(author)}</strong></p>
+      ${authorMeta ? `<p>${escapeHtml(authorMeta)}</p>` : ""}
+      ${years ? `<p class="mono">${escapeHtml(years)}</p>` : ""}
+    </div>`
+    : "";
+
+  const tocPanel = toc
+    ? `<div class="meta-panel">
+      ${toc}
+    </div>`
+    : "";
+
+  const panels = [authorPanel, tocPanel].filter(Boolean).join("\n    ");
+  return panels ? `<aside class="sidebar sidebar--sticky">\n    ${panels}\n  </aside>` : "";
+}
+
+function buildPeripheralSidebar(metadata: Record<string, string>): string {
+  const source = metadata.source || "";
+  const archiveId = metadata.archive_id || "";
+
+  const sourcePanel = source || archiveId
+    ? `<div class="meta-panel">
+      <h3>来源信息</h3>
+      ${archiveId ? `<p class="mono">${escapeHtml(archiveId)}</p>` : ""}
+      ${source ? `<p>${escapeHtml(source)}</p>` : ""}
+    </div>`
+    : "";
+
+  const relatedPanel = `<div class="meta-panel">
+      <h3>关联档案</h3>
+      <ul>
+        <li><a href="/pages/supplement-lin">林素琴护士长的值班日志</a></li>
+        <li><a href="/pages/volume-20">卷二十：事故调查志·上</a></li>
+        <li><a href="/pages/volume-23">卷二十三：异闻录·上</a></li>
+      </ul>
+    </div>`;
+
+  const panels = [sourcePanel, relatedPanel].filter(Boolean).join("\n    ");
+  return panels ? `<aside class="sidebar sidebar--sticky">\n    ${panels}\n  </aside>` : "";
+}
+
 function buildMetaHtml(metadata: Record<string, string>, contentHtml: string): string {
   const title = metadata.title || "档案说明";
   const pageNum = metadata.page_num || "";
@@ -114,15 +277,10 @@ function buildMetaHtml(metadata: Record<string, string>, contentHtml: string): s
     <span>病历数字化项目 · 内部检索系统</span>${pageNumHtml}
   </div>
 </div>
-<div class="search-panel">
-  <label for="search-input">全文检索：</label>
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-    <button type="submit">检索</button>
-    <button type="button" class="btn-secondary">高级检索</button>
-  </form>
-</div>
-${contentHtml}`;
+${buildSearchPanel()}
+<div class="content-column">
+${contentHtml}
+</div>`;
   return buildBaseWrapper({
     title,
     pageNum,
@@ -151,6 +309,9 @@ function buildVolumeHtml(metadata: Record<string, string>, contentHtml: string):
     ? `<div class="volume-meta-bar">${metaItems.join("")}</div>`
     : "";
 
+  const contentWithIds = injectHeadingIds(contentHtml);
+  const sidebarRight = buildVolumeSidebar(metadata, contentWithIds);
+
   const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
   const body = `<div class="doc-header">
   <h1>${escapeHtml(title)}</h1>
@@ -158,17 +319,10 @@ function buildVolumeHtml(metadata: Record<string, string>, contentHtml: string):
     <span>正编病历 · ${department ? escapeHtml(department) : "内部检索系统"}</span>${pageNumHtml}
   </div>
 </div>
-<div class="search-panel">
-  <label for="search-input">全文检索：</label>
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-    <button type="submit">检索</button>
-    <button type="button" class="btn-secondary">高级检索</button>
-  </form>
-</div>
+${buildSearchPanel()}
 ${metaBar}
-<div class="volume-content">
-${contentHtml}
+<div class="volume-content content-column">
+${contentWithIds}
 </div>`;
 
   return buildBaseWrapper({
@@ -177,6 +331,8 @@ ${contentHtml}
     template: "volume",
     bodyHtml: body,
     archiveId,
+    layoutClass: sidebarRight ? "page-layout--with-right-sidebar" : undefined,
+    sidebarRight,
   });
 }
 
@@ -196,6 +352,9 @@ function buildSupplementHtml(metadata: Record<string, string>, contentHtml: stri
 </div>`
     : "";
 
+  const contentWithIds = injectHeadingIds(contentHtml);
+  const sidebarLeft = buildSupplementSidebar(metadata, contentWithIds);
+
   const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
   const body = `<div class="doc-header">
   <h1>${escapeHtml(title)}</h1>
@@ -203,17 +362,10 @@ function buildSupplementHtml(metadata: Record<string, string>, contentHtml: stri
     <span>补遗档案 · 护理部</span>${pageNumHtml}
   </div>
 </div>
-<div class="search-panel">
-  <label for="search-input">全文检索：</label>
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-    <button type="submit">检索</button>
-    <button type="button" class="btn-secondary">高级检索</button>
-  </form>
-</div>
+${buildSearchPanel()}
 ${authorBlock}
-<div class="supplement-content">
-${contentHtml}
+<div class="supplement-content content-column">
+${contentWithIds}
 </div>`;
 
   return buildBaseWrapper({
@@ -222,6 +374,8 @@ ${contentHtml}
     template: "supplement",
     bodyHtml: body,
     archiveId,
+    layoutClass: sidebarLeft ? "page-layout--with-sidebar" : undefined,
+    sidebarLeft,
   });
 }
 
@@ -239,6 +393,8 @@ function buildPeripheralHtml(metadata: Record<string, string>, contentHtml: stri
 </div>`
     : "";
 
+  const sidebarRight = buildPeripheralSidebar(metadata);
+
   const pageNumHtml = pageNum ? `\n          <span class="page-num">${escapeHtml(pageNum)}</span>` : "";
   const body = `<div class="doc-header">
   <h1>${escapeHtml(title)}</h1>
@@ -246,16 +402,9 @@ function buildPeripheralHtml(metadata: Record<string, string>, contentHtml: stri
     <span>外围档案 · ${source ? escapeHtml(source) : "外部机构"}</span>${pageNumHtml}
   </div>
 </div>
-<div class="search-panel">
-  <label for="search-input">全文检索：</label>
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="搜索档案..." autocomplete="off" />
-    <button type="submit">检索</button>
-    <button type="button" class="btn-secondary">高级检索</button>
-  </form>
-</div>
+${buildSearchPanel()}
 ${sourceBlock}
-<div class="peripheral-content">
+<div class="peripheral-content content-column">
 ${contentHtml}
 </div>`;
 
@@ -265,6 +414,8 @@ ${contentHtml}
     template: "peripheral",
     bodyHtml: body,
     archiveId: displayArchiveId,
+    layoutClass: sidebarRight ? "page-layout--with-right-sidebar" : undefined,
+    sidebarRight,
   });
 }
 
@@ -296,6 +447,8 @@ function buildVariantHtml(metadata: Record<string, string>, contentHtml: string)
       "<main>",
       `<main data-variant="${escapeHtml(variantType)}" data-variant-of="${escapeHtml(variantOf)}">`
     );
+    baseHtml = baseHtml.replace("<body", `<body data-theme="dark"`);
+    baseHtml = baseHtml.replace("</body>", `  <div class="scanlines"></div>\n</body>`);
   }
   return baseHtml;
 }
@@ -358,15 +511,23 @@ function numToChinese(n: number): string {
 export async function renderArchivesPage(): Promise<string> {
   const volumes = await readVolumeList();
 
-  const volumeLinks = volumes
-    .filter((v) => v.title !== "未归档记录志")
+  const visibleVolumes = volumes.filter((v) => v.title !== "未归档记录志");
+  const volumeRows = visibleVolumes
     .map((v) => {
-      const num = numToChinese(volumes.indexOf(v) + 1);
+      const originalIndex = volumes.indexOf(v) + 1;
+      const num = numToChinese(originalIndex);
+      const volNum = String(originalIndex).padStart(2, "0");
       let title = v.title;
       if (title === "精神科评估志") {
         title = "精神科观察志（已修订）";
       }
-      return `    <a href="/pages/volume-${String(volumes.indexOf(v) + 1).padStart(2, "0")}">卷${num}：${title}</a>`;
+      return `            <tr>
+              <td class="mono">VOL-${volNum}</td>
+              <td><a href="/pages/volume-${volNum}">卷${num}：${title}</a></td>
+              <td class="mono">—</td>
+              <td>—</td>
+              <td>已数字化</td>
+            </tr>`;
     })
     .join("\n");
 
@@ -377,19 +538,31 @@ export async function renderArchivesPage(): Promise<string> {
     <span class="page-num">01/24</span>
   </div>
 </div>
-<div class="search-panel">
-  <label for="search-input">全文检索：</label>
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="检索病历..." autocomplete="off" />
-    <button type="submit">检索</button>
-    <button type="button" class="btn-secondary">高级检索</button>
-  </form>
-</div>
-<div class="volume-list">
+${buildSearchPanel("检索病历...")}
+<section class="home-section">
   <h2>档案卷宗</h2>
-${volumeLinks}
-  <a href="/pages/volume-00" class="pending">卷零 · 未命名（待整理）</a>
-</div>`;
+  <table class="archive-table">
+    <thead>
+      <tr>
+        <th>卷号</th>
+        <th>题名</th>
+        <th>年代</th>
+        <th>科室</th>
+        <th>状态</th>
+      </tr>
+    </thead>
+    <tbody>
+${volumeRows}
+      <tr>
+        <td class="mono">VOL-00</td>
+        <td><a href="/pages/volume-00" class="pending">卷零 · 未命名（待整理）</a></td>
+        <td class="mono">—</td>
+        <td>—</td>
+        <td>待整理</td>
+      </tr>
+    </tbody>
+  </table>
+</section>`;
 
   return buildBaseWrapper({
     title: "白鹿疗养院数字档案",
