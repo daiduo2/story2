@@ -63,5 +63,6 @@ jobs:
             cd /opt/story2
             echo ${{ secrets.GHCR_PULL_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest story2-narrative:latest
             docker compose up -d --remove-orphans
             docker image prune -f
